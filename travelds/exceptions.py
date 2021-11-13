@@ -36,3 +36,10 @@ class ListingError(Exception):
     """
 
     pass
+
+class CredentialsError(Exception):
+    """
+    Raised when there is an error with the credentials.
+    """
+
+    pass
