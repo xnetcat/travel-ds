@@ -1,6 +1,7 @@
 from typing import List
 
-class ProxyProvider():
+
+class ProxyProvider:
     def __init__(self) -> None:
         self._proxies = None
 

@@ -8,6 +8,7 @@ from typing import List
 
 import logging
 
+
 def console_entry_point():
     arguments: Namespace = parse_ds_arguments()
 
@@ -31,18 +32,16 @@ def console_entry_point():
         if len(proxies) == 0:
             raise ProxiesError("No proxies were found, aborting.")
 
-        proxies = [
-            {"https": f"http://{proxy}"} for proxy in proxies
-        ]
+        proxies = [{"https": f"http://{proxy}"} for proxy in proxies]
 
         if arguments.filter_proxies is True:
             logging.info(f"Found {len(proxies)} proxies. Filtering...")
             proxies = utils.filter_proxies(
-                proxies, 
-                Scraper.test_connection, 
+                proxies,
+                Scraper.test_connection,
                 arguments.threads,
                 arguments.max_retries,
-                arguments.timeout
+                arguments.timeout,
             )
             logging.info(f"Found {len(proxies)} working proxies.")
         else:
@@ -53,14 +52,14 @@ def console_entry_point():
         threads=arguments.threads,
         proxies=proxies,
         timeout=arguments.timeout,
-        max_retries=arguments.max_retries
+        max_retries=arguments.max_retries,
     )
 
     listings = scraper.get_all_listings(
         query=arguments.query,
         checkin=arguments.checkin,
         checkout=arguments.checkout,
-        type=arguments.location_type
+        type=arguments.location_type,
     )
 
     print(f"Found {len(listings)} listings.")

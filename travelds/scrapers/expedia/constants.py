@@ -57,8 +57,7 @@ SEARCH_VARIABLES = {
         "debugContext": {"abacusOverrides": [], "alterMode": "RELEASED"},
     },
     "destination": {
-        "coordinates": {
-        },
+        "coordinates": {},
         "pinnedPropertyId": None,
         "propertyIds": None,
         "mapBounds": None,
@@ -130,10 +129,8 @@ LISTING_VARIABLES = {
     "searchCriteria": {
         "primary": {
             "dateRange": {
-                "checkInDate": {
-                },
-                "checkOutDate": {
-                },
+                "checkInDate": {},
+                "checkOutDate": {},
             },
             "destination": {},
             "rooms": [{"adults": 1, "children": []}],

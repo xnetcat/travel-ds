@@ -3,6 +3,7 @@ import requests
 
 from travelds.proxies.proxy import ProxyProvider
 
+
 class SpysMe(ProxyProvider):
     def load_proxies(self) -> None:
         text = requests.get("https://www.spys.me/proxy.txt").text

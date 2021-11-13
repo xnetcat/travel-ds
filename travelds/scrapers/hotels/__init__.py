@@ -2,7 +2,7 @@ from travelds.exceptions import LocationError
 from travelds.scrapers.scraper import Scraper
 from travelds.scrapers.hotels.constants import *
 from travelds.scrapers.hotels.graphql.listing import LISTING_QUERY
-from travelds.scrapers.hotels.graphql.search import SEARCH_QUERY 
+from travelds.scrapers.hotels.graphql.search import SEARCH_QUERY
 from travelds.etl.models import HotelsListing, HotelsPrice
 from travelds import utils
 from typing import Dict, Optional, List
@@ -13,6 +13,7 @@ import requests
 import re
 import logging
 
+
 class Hotels(Scraper):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -22,25 +23,20 @@ class Hotels(Scraper):
         self.batch = 10
         self.Listing = HotelsListing
         self.Price = HotelsPrice
-        
 
-    def get_listings(self, location: Dict, checkin: str, checkout: str, offset: int = 0) -> List[Dict]:
+    def get_listings(
+        self, location: Dict, checkin: str, checkout: str, offset: int = 0
+    ) -> List[Dict]:
         search_variables = copy.deepcopy(SEARCH_VARIABLES)
-        search_variables["sqmState"]["destination"]["id"] = location[
-            "destinationId"
-        ]
+        search_variables["sqmState"]["destination"]["id"] = location["destinationId"]
         search_variables["sqmState"]["destination"]["value"] = (
             location.get("name")
             if location.get("name") is not None
             else re.sub(r"<.*?>", r"", location.get("firstLine", ""))
         )
         search_variables["sqmState"]["destination"]["type"] = location["type"]
-        search_variables["sqmState"]["destination"]["latitude"] = location[
-            "latitude"
-        ]
-        search_variables["sqmState"]["destination"]["longitude"] = location[
-            "longitude"
-        ]
+        search_variables["sqmState"]["destination"]["latitude"] = location["latitude"]
+        search_variables["sqmState"]["destination"]["longitude"] = location["longitude"]
         search_variables["sqmState"]["checkIn"] = checkin
         search_variables["sqmState"]["checkOut"] = checkout
         search_variables["pagination"]["pn"] = offset
@@ -61,9 +57,11 @@ class Hotels(Scraper):
             timeout=self.timeout,
             max_retries=self.max_retries,
             transform=lambda x: x.json(),
-        ) # type: ignore
+        )  # type: ignore
 
-        logging.debug(f"{search_variables['sqmState']['destination']['value']} - Finished offset {offset}")
+        logging.debug(
+            f"{search_variables['sqmState']['destination']['value']} - Finished offset {offset}"
+        )
 
         return [
             {
@@ -74,12 +72,17 @@ class Hotels(Scraper):
                 "lon": float(listing["coordinate"]["lon"]),
                 "room_and_property_type": None,
                 "url": f"https://uk.hotels.com/ho{listing['hotelId']}/",
-                "rate_with_service_fee": None if listing["ratePlan"]["price"]["exactCurrent"] == 0 else listing["ratePlan"]["price"]["exactCurrent"],
+                "rate_with_service_fee": None
+                if listing["ratePlan"]["price"]["exactCurrent"] == 0
+                else listing["ratePlan"]["price"]["exactCurrent"],
                 "currency": self.currency,
                 "available": listing["ratePlan"]["price"]["exactCurrent"] == 0,
                 "checkin": checkin,
                 "checkout": checkout,
-            } for listing in response["data"]["searchPage"]["body"]["searchResults"]["results"]
+            }
+            for listing in response["data"]["searchPage"]["body"]["searchResults"][
+                "results"
+            ]
         ]
 
     def get_listing_data(self, id: int, checkin: str, checkout: str) -> Optional[Dict]:
@@ -87,7 +90,7 @@ class Hotels(Scraper):
         listing_variables["sqmState"]["destination"]["id"] = str(id)
         listing_variables["sqmState"]["checkIn"] = checkin
         listing_variables["sqmState"]["checkOut"] = checkout
-        
+
         response: Dict = utils.send_request(
             BASE_URL,
             method="post",
@@ -101,7 +104,7 @@ class Hotels(Scraper):
             timeout=self.timeout,
             max_retries=self.max_retries,
             transform=lambda x: x.json(),
-        ) # type: ignore
+        )  # type: ignore
 
         body = None
         price = None
@@ -113,44 +116,40 @@ class Hotels(Scraper):
             is_multiple = len(body["roomsAndRates"]["groups"]["base"]["rooms"]) > 1
             price = float(body["featuredPrice"]["currentPrice"]["plain"])
             country = body["propertyDescription"]["address"]["countryName"]
-            entry = body['atAGlance']['keyFacts']['hotelSize'][0]
-            m1 = re.match(r'^This hotel has (\d+) rooms$', entry)
-            m2 = re.match(r'^(\d+) rooms$', entry)
+            entry = body["atAGlance"]["keyFacts"]["hotelSize"][0]
+            m1 = re.match(r"^This hotel has (\d+) rooms$", entry)
+            m2 = re.match(r"^(\d+) rooms$", entry)
             if m1:
-                num_rooms= int(m1.groups()[0])
+                num_rooms = int(m1.groups()[0])
             elif m2:
-                num_rooms= int(m2.groups()[0])
+                num_rooms = int(m2.groups()[0])
         except Exception:
             pass
 
         return {
             "rate_with_service_fee": (price if price and price > 0 else None),
             "available": (True if price and price > 0 else False),
-            "is_bookable": body['unavailable']['isStopSell'] is None if body else None,
+            "is_bookable": body["unavailable"]["isStopSell"] is None if body else None,
             "currency": self.currency,
             "num_rooms": num_rooms if num_rooms is not None else None,
-            'hotel_stars': body['propertyDescription']['starRating'] if body is not None else None,
+            "hotel_stars": body["propertyDescription"]["starRating"]
+            if body is not None
+            else None,
             "country": country,
             "is_multiple": is_multiple,
         }
 
     def get_total_count(self, location: Dict, checkin: str, checkout: str) -> int:
         search_variables = copy.deepcopy(SEARCH_VARIABLES)
-        search_variables["sqmState"]["destination"]["id"] = location[
-            "destinationId"
-        ]
+        search_variables["sqmState"]["destination"]["id"] = location["destinationId"]
         search_variables["sqmState"]["destination"]["value"] = (
             location.get("name")
             if location.get("name") is not None
             else re.sub(r"<.*?>", r"", location.get("firstLine", ""))
         )
         search_variables["sqmState"]["destination"]["type"] = location["type"]
-        search_variables["sqmState"]["destination"]["latitude"] = location[
-            "latitude"
-        ]
-        search_variables["sqmState"]["destination"]["longitude"] = location[
-            "longitude"
-        ]
+        search_variables["sqmState"]["destination"]["latitude"] = location["latitude"]
+        search_variables["sqmState"]["destination"]["longitude"] = location["longitude"]
         search_variables["sqmState"]["checkIn"] = checkin
         search_variables["sqmState"]["checkOut"] = checkout
         search_variables["pagination"]["pn"] = 0
@@ -160,15 +159,15 @@ class Hotels(Scraper):
             method="post",
             proxies=self.proxies,
             json={
-                    "operationName": "searchPageQuery",
-                    "variables": search_variables,
-                    "query": SEARCH_QUERY,
+                "operationName": "searchPageQuery",
+                "variables": search_variables,
+                "query": SEARCH_QUERY,
             },
             headers=HEADERS,
             timeout=self.timeout,
             max_retries=self.max_retries,
             transform=lambda x: x.json(),
-        ) # type: ignore
+        )  # type: ignore
 
         total_count = response["data"]["searchPage"]["body"]["searchResults"][
             "totalCount"
@@ -199,7 +198,7 @@ class Hotels(Scraper):
             timeout=self.timeout,
             max_retries=self.max_retries,
             transform=lambda x: x.json(),
-        ) # type: ignore
+        )  # type: ignore
 
         for suggestion in response["suggestions"]:
             if suggestion["group"] == "CITY_GROUP":
@@ -223,12 +222,10 @@ class Hotels(Scraper):
             timeout=self.timeout,
             max_retries=self.max_retries,
             transform=lambda x: json.loads(x.text.split("(", 1)[1].rsplit(")", 1)[0]),
-        ) # type: ignore
+        )  # type: ignore
 
         for suggestion in response["suggestions"]:
             if suggestion["type"] in ["COUNTRY", "STATE"]:
                 return suggestion
 
         raise LocationError("Invalid country")
-
-    

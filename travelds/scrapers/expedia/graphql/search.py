@@ -801,4 +801,3 @@ fragment featuredMessage on LodgingEnrichedMessage {
   value
 }
 """
-

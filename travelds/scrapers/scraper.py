@@ -4,8 +4,16 @@ from travelds.exceptions import *
 import concurrent.futures
 import logging
 
-class Scraper():
-    def __init__(self, currency: str, threads: int, proxies: List[Dict], timeout: int, max_retries: int) -> None:
+
+class Scraper:
+    def __init__(
+        self,
+        currency: str,
+        threads: int,
+        proxies: List[Dict],
+        timeout: int,
+        max_retries: int,
+    ) -> None:
         self.currency = currency
         self.threads = threads
         self.proxies = proxies
@@ -15,7 +23,13 @@ class Scraper():
         self.Listing = None
         self.Price = None
 
-    def get_all_listings(self, query: str, checkin: str, checkout: str, type: Literal["city", "country", "region"]) -> List[Dict]:
+    def get_all_listings(
+        self,
+        query: str,
+        checkin: str,
+        checkout: str,
+        type: Literal["city", "country", "region"],
+    ) -> List[Dict]:
         """
         Get all listings for a given location
         """
@@ -30,15 +44,14 @@ class Scraper():
         logging.info(f"{total_count} listings found for {query} {checkin}/{checkout}")
 
         results = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self.threads) as executor:
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=self.threads
+        ) as executor:
             future_to_result = {
                 executor.submit(
-                    self.get_listings, 
-                    location, 
-                    checkin, 
-                    checkout, 
-                    offset
-                ): offset for offset in offsets
+                    self.get_listings, location, checkin, checkout, offset
+                ): offset
+                for offset in offsets
             }
 
             for future in concurrent.futures.as_completed(future_to_result):
@@ -47,11 +60,13 @@ class Scraper():
                     result = future.result()
                     results.extend(result)
                 except Exception as exc:
-                    logging.exception('%r generated an exception: %s' % (offset, exc))
+                    logging.exception("%r generated an exception: %s" % (offset, exc))
 
         return results
 
-    def get_listings(self, location: Dict, checkin: str, checkout: str, offset: int) -> List[Dict]:
+    def get_listings(
+        self, location: Dict, checkin: str, checkout: str, offset: int
+    ) -> List[Dict]:
         """
         Get listing for a given location/checkin/checkout/offset
         """
@@ -68,7 +83,7 @@ class Scraper():
         Get listing data for a given listing id/checkin/checkout
         """
         raise NotImplementedError
-    
+
     def get_location_data(self, query: str, type: Optional[str]) -> Dict:
         """
         Get location data for a given location/type

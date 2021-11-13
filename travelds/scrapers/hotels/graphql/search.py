@@ -1,4 +1,4 @@
-SEARCH_QUERY ="""
+SEARCH_QUERY = """
 fragment FilterRangeFragment on FilterRange {
   min {
     value

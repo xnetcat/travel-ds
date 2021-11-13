@@ -4,7 +4,7 @@ from travelds.exceptions import *
 from travelds.scrapers.expedia.graphql.search import SEARCH_QUERY
 from travelds.scrapers.expedia.graphql.listing import LISTING_QUERY
 from travelds.scrapers.scraper import Scraper
-from travelds.etl.models import ExpediaListing, ExpediaPrice 
+from travelds.etl.models import ExpediaListing, ExpediaPrice
 from travelds import utils
 from datetime import datetime
 from typing import Dict, List
@@ -24,17 +24,25 @@ class Expedia(Scraper):
         self.Listing = ExpediaListing
         self.Price = ExpediaPrice
 
-    def get_listings(self, location: Dict, checkin: str, checkout: str, offset: int) -> List[Dict]:
+    def get_listings(
+        self, location: Dict, checkin: str, checkout: str, offset: int
+    ) -> List[Dict]:
         checkin_datetime = datetime.strptime(checkin, "%Y-%m-%d")
         checkout_datetime = datetime.strptime(checkout, "%Y-%m-%d")
 
         search_variables = copy.deepcopy(SEARCH_VARIABLES)
         search_variables["currency"] = self.currency
         search_variables["context"]["identity"]["duaid"] = self.duaid
-        search_variables["destination"]["regionName"] = location["regionNames"]["displayName"]
+        search_variables["destination"]["regionName"] = location["regionNames"][
+            "displayName"
+        ]
         search_variables["destination"]["regionId"] = location["gaiaId"]
-        search_variables["destination"]["coordinates"]["latitude"] = float(location["coordinates"]["lat"])
-        search_variables["destination"]["coordinates"]["longitude"] = float(location["coordinates"]["long"])
+        search_variables["destination"]["coordinates"]["latitude"] = float(
+            location["coordinates"]["lat"]
+        )
+        search_variables["destination"]["coordinates"]["longitude"] = float(
+            location["coordinates"]["long"]
+        )
         search_variables["searchPagination"]["startingIndex"] = offset * 500
         search_variables["dateRange"]["checkInDate"]["day"] = checkin_datetime.day
         search_variables["dateRange"]["checkInDate"]["month"] = checkin_datetime.month
@@ -42,7 +50,7 @@ class Expedia(Scraper):
         search_variables["dateRange"]["checkOutDate"]["day"] = checkout_datetime.day
         search_variables["dateRange"]["checkOutDate"]["month"] = checkout_datetime.month
         search_variables["dateRange"]["checkOutDate"]["year"] = checkout_datetime.year
-        
+
         response: Dict = utils.send_request(
             url=BASE_URL,
             method="post",
@@ -51,12 +59,12 @@ class Expedia(Scraper):
             json={
                 "query": SEARCH_QUERY,
                 "operationName": "LodgingPwaPropertySearch",
-                "variables": search_variables
+                "variables": search_variables,
             },
             timeout=self.timeout,
             max_retries=self.max_retries,
             transform=lambda x: x.json(),
-        ) # type: ignore
+        )  # type: ignore
 
         return [
             {
@@ -86,10 +94,16 @@ class Expedia(Scraper):
         search_variables = copy.deepcopy(SEARCH_VARIABLES)
         search_variables["currency"] = self.currency
         search_variables["context"]["identity"]["duaid"] = self.duaid
-        search_variables["destination"]["regionName"] = location["regionNames"]["displayName"]
+        search_variables["destination"]["regionName"] = location["regionNames"][
+            "displayName"
+        ]
         search_variables["destination"]["regionId"] = location["gaiaId"]
-        search_variables["destination"]["coordinates"]["latitude"] = float(location["coordinates"]["lat"])
-        search_variables["destination"]["coordinates"]["longitude"] = float(location["coordinates"]["long"])
+        search_variables["destination"]["coordinates"]["latitude"] = float(
+            location["coordinates"]["lat"]
+        )
+        search_variables["destination"]["coordinates"]["longitude"] = float(
+            location["coordinates"]["long"]
+        )
         search_variables["searchPagination"]["startingIndex"] = 0
         search_variables["dateRange"]["checkInDate"]["day"] = checkin_datetime.day
         search_variables["dateRange"]["checkInDate"]["month"] = checkin_datetime.month
@@ -106,12 +120,12 @@ class Expedia(Scraper):
             json={
                 "query": SEARCH_QUERY,
                 "operationName": "LodgingPwaPropertySearch",
-                "variables": search_variables
+                "variables": search_variables,
             },
             timeout=self.timeout,
             max_retries=self.max_retries,
             transform=lambda x: x.json(),
-        ) # type: ignore
+        )  # type: ignore
 
         return response["data"]["propertySearch"]["summary"]["matchedPropertiesSize"]
 
@@ -123,12 +137,24 @@ class Expedia(Scraper):
         listing_variables["currency"] = self.currency
         listing_variables["context"]["identity"]["duaid"] = self.duaid
         listing_variables["propertyId"] = str(id)
-        listing_variables["searchCriteria"]["primary"]["dateRange"]["checkInDate"]["day"] = checkin_datetime.day
-        listing_variables["searchCriteria"]["primary"]["dateRange"]["checkInDate"]["month"] = checkin_datetime.month
-        listing_variables["searchCriteria"]["primary"]["dateRange"]["checkInDate"]["year"] = checkin_datetime.year
-        listing_variables["searchCriteria"]["primary"]["dateRange"]["checkOutDate"]["day"] = checkout_datetime.day
-        listing_variables["searchCriteria"]["primary"]["dateRange"]["checkOutDate"]["month"] = checkout_datetime.month
-        listing_variables["searchCriteria"]["primary"]["dateRange"]["checkOutDate"]["year"] = checkout_datetime.year
+        listing_variables["searchCriteria"]["primary"]["dateRange"]["checkInDate"][
+            "day"
+        ] = checkin_datetime.day
+        listing_variables["searchCriteria"]["primary"]["dateRange"]["checkInDate"][
+            "month"
+        ] = checkin_datetime.month
+        listing_variables["searchCriteria"]["primary"]["dateRange"]["checkInDate"][
+            "year"
+        ] = checkin_datetime.year
+        listing_variables["searchCriteria"]["primary"]["dateRange"]["checkOutDate"][
+            "day"
+        ] = checkout_datetime.day
+        listing_variables["searchCriteria"]["primary"]["dateRange"]["checkOutDate"][
+            "month"
+        ] = checkout_datetime.month
+        listing_variables["searchCriteria"]["primary"]["dateRange"]["checkOutDate"][
+            "year"
+        ] = checkout_datetime.year
 
         response: Dict = utils.send_request(
             url=BASE_URL,
@@ -139,19 +165,25 @@ class Expedia(Scraper):
             json={
                 "query": LISTING_QUERY,
                 "operationName": "PropertyOffers",
-                "variables": listing_variables
+                "variables": listing_variables,
             },
             max_retries=self.max_retries,
             transform=lambda x: x.json(),
-        ) # type: ignore
+        )  # type: ignore
 
         categorized_listings = response["data"]["propertyOffers"]["categorizedListings"]
         for listing in categorized_listings:
             if listing["__typename"] == "LodgingCategorizedUnit":
-                price_data = listing["primarySelections"][0]["propertyUnit"]["ratePlans"][0]["priceDetails"][0]
+                price_data = listing["primarySelections"][0]["propertyUnit"][
+                    "ratePlans"
+                ][0]["priceDetails"][0]
                 return {
-                    "rate_with_service_fee": price_data["price"]["options"][0]["displayPrice"]["amount"],
-                    "currency": price_data["price"]["options"][0]["displayPrice"]["currencyInfo"]["code"],
+                    "rate_with_service_fee": price_data["price"]["options"][0][
+                        "displayPrice"
+                    ]["amount"],
+                    "currency": price_data["price"]["options"][0]["displayPrice"][
+                        "currencyInfo"
+                    ]["code"],
                     "available": price_data["availability"]["available"],
                 }
 
@@ -168,19 +200,22 @@ class Expedia(Scraper):
             timeout=self.timeout,
             max_retries=self.max_retries,
             transform=lambda x: x.json(),
-        ) # type: ignore
+        )  # type: ignore
 
         for result in response["sr"]:
             if result["type"] in ["CITY", "MULTICITY"]:
-                result['q'] = query
+                result["q"] = query
                 return result
 
         raise LocationError("Invalid country")
 
     def test_connection(self, proxy, timeout) -> bool:
-        return requests.get(
-            "https://www.expedia.co.uk/",
-            headers=HEADERS,
-            proxies=proxy,
-            timeout=timeout,
-        ).status_code == 200
+        return (
+            requests.get(
+                "https://www.expedia.co.uk/",
+                headers=HEADERS,
+                proxies=proxy,
+                timeout=timeout,
+            ).status_code
+            == 200
+        )

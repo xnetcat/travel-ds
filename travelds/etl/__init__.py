@@ -1,5 +1,6 @@
 import logging
 import django
+
 django.setup()
 
 from typing import Callable, List, Dict
@@ -8,14 +9,23 @@ from travelds import utils
 import concurrent.futures
 import datetime
 
-class ETL():
-    def __init__(self, scraper: Callable, currency: str = "USD", threads: int = 1, proxies: List[Dict] = None, timeout: int = 5, max_retries: int = 1) -> None:
+
+class ETL:
+    def __init__(
+        self,
+        scraper: Callable,
+        currency: str = "USD",
+        threads: int = 1,
+        proxies: List[Dict] = None,
+        timeout: int = 5,
+        max_retries: int = 1,
+    ) -> None:
         self.scraper = scraper(
             currency=currency,
             threads=threads,
             proxies=proxies,
             timeout=timeout,
-            max_retries=max_retries
+            max_retries=max_retries,
         )
         self.currency = currency
         self.threads = threads
@@ -28,11 +38,7 @@ class ETL():
         for city in locations:
             for checkin, checkout in utils.get_dates():
                 dates_matrix.append(
-                    (
-                        city,
-                        checkin.strftime("%Y-%m-%d"),
-                        checkout.strftime("%Y-%m-%d")
-                    )
+                    (city, checkin.strftime("%Y-%m-%d"), checkout.strftime("%Y-%m-%d"))
                 )
 
         with concurrent.futures.ThreadPoolExecutor(
@@ -44,14 +50,16 @@ class ETL():
                     date_data[0],
                     date_data[1],
                     date_data[2],
-                    type
+                    type,
                 ): date_data
                 for date_data in dates_matrix
             }
             for future in concurrent.futures.as_completed(future_to_date_data):
                 date_data = future_to_date_data[future]
                 results = future.result()
-                logging.info(f"Finished {date_data[0]} {date_data[1]}/{date_data[2]} = {len(results)}")
+                logging.info(
+                    f"Finished {date_data[0]} {date_data[1]}/{date_data[2]} = {len(results)}"
+                )
                 for result in results:
                     try:
                         self.add_listing(result)
@@ -100,15 +108,10 @@ class ETL():
         ) as executor:
             for listing, checkin, checkout in dates_matrix:
                 for listing, checkin, checkout in dates_matrix:
-                    executor.submit(
-                        self.add_price, listing, checkin, checkout
-                    )
-                    
-                
+                    executor.submit(self.add_price, listing, checkin, checkout)
 
     def add_listing(self, result):
-        listing, created = self.scraper.Listing.objects.get_or_create(
-                code=result["id"])
+        listing, created = self.scraper.Listing.objects.get_or_create(code=result["id"])
 
         is_tracked = int(result["id"]) % 16 <= 1
         listing.is_tracked = is_tracked

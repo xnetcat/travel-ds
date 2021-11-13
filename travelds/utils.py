@@ -9,6 +9,7 @@ import concurrent.futures
 import requests
 import random
 
+
 def split_list(l: List, n: int) -> List[List]:
     """
     Split List into n chunks
@@ -23,6 +24,7 @@ def split_list(l: List, n: int) -> List[List]:
         last += avg
 
     return new_list
+
 
 def get_next_weekday(startdate: date, weekday: weekday, weeks: int = None) -> date:
     """
@@ -71,7 +73,10 @@ def get_dates() -> List[Tuple[date, date]]:
 
     return dates
 
-def test_proxy(proxy: dict, func: Callable, max_retries: int, timeeout: int = 5) -> bool:
+
+def test_proxy(
+    proxy: dict, func: Callable, max_retries: int, timeeout: int = 5
+) -> bool:
     """
     Test proxy using provided function
     """
@@ -87,7 +92,14 @@ def test_proxy(proxy: dict, func: Callable, max_retries: int, timeeout: int = 5)
 
     return False
 
-def filter_proxies(proxies: List[Dict], func: Callable, threads: int = 1, max_retries: int = 1, timeeout: int = 5) -> List[Dict]:
+
+def filter_proxies(
+    proxies: List[Dict],
+    func: Callable,
+    threads: int = 1,
+    max_retries: int = 1,
+    timeeout: int = 5,
+) -> List[Dict]:
     """
     Filter proxies using provided function
     """
@@ -95,9 +107,8 @@ def filter_proxies(proxies: List[Dict], func: Callable, threads: int = 1, max_re
     working_proxies: List[Dict] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
         future_to_proxy = {
-            executor.submit(
-                test_proxy, proxy, func, max_retries, timeeout
-            ): proxy for proxy in proxies
+            executor.submit(test_proxy, proxy, func, max_retries, timeeout): proxy
+            for proxy in proxies
         }
 
         for future in concurrent.futures.as_completed(future_to_proxy):
@@ -108,7 +119,19 @@ def filter_proxies(proxies: List[Dict], func: Callable, threads: int = 1, max_re
 
     return working_proxies
 
-def send_request(url: str, method: str = "get", proxies: List[Dict] = None, params: dict = None, headers: dict = None, data: str = None, json: dict = None, timeout: int = None, max_retries: int = 1, transform: Callable=None):
+
+def send_request(
+    url: str,
+    method: str = "get",
+    proxies: List[Dict] = None,
+    params: dict = None,
+    headers: dict = None,
+    data: str = None,
+    json: dict = None,
+    timeout: int = None,
+    max_retries: int = 1,
+    transform: Callable = None,
+):
     """
     Send request to url, will fail if we ran out of proxies
     """
@@ -150,5 +173,3 @@ def send_request(url: str, method: str = "get", proxies: List[Dict] = None, para
         )
 
         return transform(response) if transform else response
-
-                

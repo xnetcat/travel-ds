@@ -9,7 +9,7 @@ import logging
 
 
 def console_entry_point():
-    
+
     arguments = parse_etl_arguments()
 
     # Set up logging
@@ -27,18 +27,16 @@ def console_entry_point():
         if len(proxies) == 0:
             raise ProxiesError("No proxies were found, aborting.")
 
-        proxies = [
-            {"https": f"http://{proxy}"} for proxy in proxies
-        ]
+        proxies = [{"https": f"http://{proxy}"} for proxy in proxies]
 
         if arguments.filter_proxies is True:
             logging.info(f"Found {len(proxies)} proxies. Filtering...")
             proxies = utils.filter_proxies(
-                proxies, 
-                Scraper.test_connection, 
+                proxies,
+                Scraper.test_connection,
                 arguments.threads,
                 arguments.max_retries,
-                arguments.timeout
+                arguments.timeout,
             )
             logging.info(f"Found {len(proxies)} working proxies.")
         else:
@@ -73,4 +71,3 @@ def console_entry_point():
         elif arguments.location == "regions":
             logging.info("Updating regions...")
             etl.update_listings(REGIONS)
-    

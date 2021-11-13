@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from travelds.constants import SCRAPERS, PROXIES
 
+
 def parse_arguments() -> Namespace:
     # Initialize argument parser
     parser = ArgumentParser(
@@ -18,6 +19,7 @@ def parse_arguments() -> Namespace:
     parser = _parse_proxies_options(parser)
 
     return parser.parse_args()
+
 
 def _parse_scraper_options(parser: ArgumentParser) -> ArgumentParser:
     # Website argument
@@ -50,7 +52,7 @@ def _parse_scraper_options(parser: ArgumentParser) -> ArgumentParser:
         "--currency",
         type=str,
         help="The currency used when getting price data.",
-        default="USD"
+        default="USD",
     )
 
     # Checkin date
@@ -77,6 +79,7 @@ def _parse_scraper_options(parser: ArgumentParser) -> ArgumentParser:
     )
 
     return parser
+
 
 def _parse_requests_options(parser: ArgumentParser) -> ArgumentParser:
     # Timeout
@@ -105,6 +108,7 @@ def _parse_requests_options(parser: ArgumentParser) -> ArgumentParser:
 
     return parser
 
+
 def _parse_proxies_options(parser: ArgumentParser) -> ArgumentParser:
     # List of proxies websites to use when scraping data
     parser.add_argument(
@@ -125,4 +129,3 @@ def _parse_proxies_options(parser: ArgumentParser) -> ArgumentParser:
     )
 
     return parser
-
