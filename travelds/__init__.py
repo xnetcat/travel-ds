@@ -1,12 +1,13 @@
 import os
-os.environ['DJANGO_SETTINGS_MODULE'] = 'travelds.settings'
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "travelds.settings"
 
 import django
 from travelds import settings as overridden_settings
 from django.conf import settings
 
 
-default_app_config = 'travelds.apps.TravelDSConfig'
+default_app_config = "travelds.apps.TravelDSConfig"
 
 if not settings.configured:
     # Get the list of attributes the module has
@@ -20,7 +21,7 @@ if not settings.configured:
 
     # Configure settings using the settings
     settings.configure(**conf)
-    
+
     # This is needed since it is a standalone django package
     django.setup()
 

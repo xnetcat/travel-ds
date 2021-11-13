@@ -74,9 +74,7 @@ def get_dates() -> List[Tuple[date, date]]:
     return dates
 
 
-def test_proxy(
-    proxy: dict, func: Callable, max_retries: int, timeout: int = 5
-) -> bool:
+def test_proxy(proxy: dict, func: Callable, max_retries: int, timeout: int = 5) -> bool:
     """
     Test proxy using provided function
     """
