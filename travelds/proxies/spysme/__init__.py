@@ -1,7 +1,7 @@
 import re
 import requests
 
-from travelds.proxies.proxy import ProxyProvider
+from travelds.proxies.base import ProxyProvider
 
 
 class SpysMe(ProxyProvider):

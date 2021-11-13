@@ -1,5 +1,5 @@
 from travelds.exceptions import LocationError
-from travelds.scrapers.scraper import Scraper
+from travelds.scrapers.base import Scraper
 from travelds.scrapers.hotels.constants import *
 from travelds.scrapers.hotels.graphql.listing import LISTING_QUERY
 from travelds.scrapers.hotels.graphql.search import SEARCH_QUERY

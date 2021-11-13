@@ -75,7 +75,7 @@ def get_dates() -> List[Tuple[date, date]]:
 
 
 def test_proxy(
-    proxy: dict, func: Callable, max_retries: int, timeeout: int = 5
+    proxy: dict, func: Callable, max_retries: int, timeout: int = 5
 ) -> bool:
     """
     Test proxy using provided function
@@ -84,7 +84,7 @@ def test_proxy(
     retries = 0
     while retries < max_retries:
         try:
-            works = func(proxy, timeeout)
+            works = func(None, proxy=proxy, timeout=timeout)
         except:
             retries += 1
         else:
@@ -98,7 +98,7 @@ def filter_proxies(
     func: Callable,
     threads: int = 1,
     max_retries: int = 1,
-    timeeout: int = 5,
+    timeout: int = 5,
 ) -> List[Dict]:
     """
     Filter proxies using provided function
@@ -107,7 +107,7 @@ def filter_proxies(
     working_proxies: List[Dict] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
         future_to_proxy = {
-            executor.submit(test_proxy, proxy, func, max_retries, timeeout): proxy
+            executor.submit(test_proxy, proxy, func, max_retries, timeout): proxy
             for proxy in proxies
         }
 

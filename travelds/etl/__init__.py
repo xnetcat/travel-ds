@@ -1,7 +1,4 @@
 import logging
-import django
-
-django.setup()
 
 from typing import Callable, List, Dict
 from travelds import utils

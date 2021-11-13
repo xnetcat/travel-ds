@@ -124,7 +124,7 @@ class Scraper:
         """
         raise NotImplementedError
 
-    def test_connection(self, proxy) -> bool:
+    def test_connection(self, proxy: Dict, timeout: int) -> bool:
         """
         Test connection for a given proxy
         """

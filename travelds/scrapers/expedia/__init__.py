@@ -3,7 +3,7 @@ from travelds.scrapers.expedia.constants import *
 from travelds.exceptions import *
 from travelds.scrapers.expedia.graphql.search import SEARCH_QUERY
 from travelds.scrapers.expedia.graphql.listing import LISTING_QUERY
-from travelds.scrapers.scraper import Scraper
+from travelds.scrapers.base import Scraper
 from travelds.etl.models import ExpediaListing, ExpediaPrice
 from travelds import utils
 from datetime import datetime
@@ -209,7 +209,7 @@ class Expedia(Scraper):
 
         raise LocationError("Invalid country")
 
-    def test_connection(self, proxy, timeout) -> bool:
+    def test_connection(self, proxy: Dict, timeout: int) -> bool:
         return (
             requests.get(
                 "https://www.expedia.co.uk/",
