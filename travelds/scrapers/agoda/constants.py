@@ -2,9 +2,9 @@ from typing import Any, Dict
 
 
 BASE_URL = "https://www.agoda.com/"
-CITY_URL = BASE_URL + "api/cronos/search/GetUnifiedSuggestResult/3/1/1/0/en-us/"
-SEARCH_URL = BASE_URL + "graphql/search"
-LISTING_URL = BASE_URL + "api/cronos/property/BelowFoldParams/GetSecondaryData"
+CITY_URL = "https://www.agoda.com/api/cronos/search/GetUnifiedSuggestResult/3/1/1/0/en-us/"
+SEARCH_URL = "https://www.agoda.com/graphql/search"
+LISTING_URL = "https://www.agoda.com/api/cronos/property/BelowFoldParams/GetSecondaryData"
 
 HEADERS = {
     "authority": "www.agoda.com",
