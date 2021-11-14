@@ -166,6 +166,7 @@ def send_request(
             url=url,
             params=params,
             headers=headers,
+            data=data,
             json=json,
             timeout=timeout,
         )
