@@ -176,7 +176,7 @@ class Agoda(Scraper):
                 "variables": search_variables,
                 "query": SEARCH_QUERY,
             },
-            set_credentials=lambda credits, _headers, json, _params: update(
+            set_credentials=lambda credits, _headers, json, _params, _cookies: update(
                 json,
                 {
                     "variables": {

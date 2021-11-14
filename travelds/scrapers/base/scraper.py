@@ -128,6 +128,12 @@ class Scraper:
         """
         raise NotImplementedError
 
+    def get_credentials(self, proxy: Optional[Dict], timeout: int) -> Dict:
+        """
+        Get credentials for a given proxy
+        """
+        raise NotImplementedError
+
     def test_connection(self, proxy: Dict, timeout: int) -> Tuple[bool, Optional[Dict]]:
         """
         Test connection for a given proxy, and return bool and credentials
