@@ -1,5 +1,6 @@
 from typing import List, Dict, Literal, Optional
 from travelds.exceptions import *
+from travelds import utils
 
 import concurrent.futures
 import logging
@@ -22,6 +23,7 @@ class Scraper:
         self.batch: Optional[int] = None
         self.Listing = None
         self.Price = None
+        self.headers = None
 
     def get_all_listings(
         self,
@@ -62,6 +64,7 @@ class Scraper:
                 except Exception as exc:
                     logging.exception("%r generated an exception: %s" % (offset, exc))
 
+        logging.info(f"{len(results)} listings found for {query} {checkin}/{checkout}")
         return results
 
     def get_listings(
@@ -84,43 +87,43 @@ class Scraper:
         """
         raise NotImplementedError
 
-    def get_location_data(self, query: str, type: Optional[str]) -> Dict:
+    def get_location_data(self, query: str, type: Optional[str], **creds) -> Dict:
         """
         Get location data for a given location/type
         """
         try:
             if type == "city":
-                return self.get_city_data(query)
+                return self.get_city_data(query, **creds)
             elif type == "country":
-                return self.get_country_data(query)
+                return self.get_country_data(query, **creds)
             elif type == "region":
-                return self.get_region_data(query)
+                return self.get_region_data(query, **creds)
 
             raise LocationError("Invalid location type")
         except NotImplementedError:
             raise LocationError("Invalid location type")
 
-    def get_city_data(self, query: str) -> Dict:
+    def get_city_data(self, query: str, **creds) -> Dict:
         """
         Get city data for a given city
         """
         raise NotImplementedError
 
-    def get_country_data(self, query: str) -> Dict:
+    def get_country_data(self, query: str, **creds) -> Dict:
         """
         Get country data for a given country
         """
         raise NotImplementedError
 
-    def get_region_data(self, query: str) -> Dict:
+    def get_region_data(self, query: str, **creds) -> Dict:
         """
         Get region data for a given region
         """
         raise NotImplementedError
 
-    def get_credentials(self, proxy) -> Dict:
+    def get_credentials(self, proxy: Optional[Dict], timeout: int) -> Dict:
         """
-        Get credentials for a given proxy
+        Get credentials
         """
         raise NotImplementedError
 
@@ -129,3 +132,21 @@ class Scraper:
         Test connection for a given proxy
         """
         raise NotImplementedError
+
+    def send_request(self, **kwargs):
+        """
+        Send request, use kwargs to overwrite parameters
+        """
+
+        return utils.send_request(
+            url=kwargs["url"],
+            params=kwargs.get("params"),
+            data=kwargs.get("data"),
+            json=kwargs.get("json"),
+            transform=kwargs.get("transform"),
+            proxies=kwargs["proxies"] if kwargs.get("proxies") else self.proxies,
+            timeout=kwargs["timeout"] if kwargs.get("timeout") else self.timeout,
+            max_retries=kwargs["max_retries"] if kwargs.get("max_retries") else self.max_retries,
+            headers=kwargs["headers"] if kwargs.get("headers") else self.headers,
+        )
+        
