@@ -1,4 +1,4 @@
-from typing import Any, List, Dict, Literal, Optional
+from typing import Any, List, Dict, Literal, Optional, Tuple
 from travelds.exceptions import *
 from travelds import utils
 
@@ -7,11 +7,12 @@ import logging
 
 
 class Scraper:
+    requires_credentials = None
     def __init__(
         self,
         currency: str,
         threads: int,
-        proxies: List[Dict],
+        proxies: List[Tuple[Dict, Optional[Dict]]],
         timeout: int,
         max_retries: int,
     ) -> None:
@@ -20,10 +21,11 @@ class Scraper:
         self.proxies = proxies
         self.timeout = timeout
         self.max_retries = max_retries
-        self.batch: Optional[int] = None
+        self.batch_size: Optional[int] = None
         self.Listing = None
         self.Price = None
         self.headers = None
+        self.requires_credentials = None
 
     def get_all_listings(
         self,
@@ -36,12 +38,12 @@ class Scraper:
         Get all listings for a given location
         """
 
-        if self.batch is None:
-            raise ScraperError("Batch number is not set")
+        if self.batch_size is None:
+            raise ScraperError("Batch size is not set")
 
         location = self.get_location_data(query, type)
         total_count = self.get_total_count(location, checkin, checkout)
-        num_pages = int(total_count / self.batch)
+        num_pages = int(total_count / self.batch_size)
         offsets = list(range(num_pages+1))
 
         results = []
@@ -85,49 +87,43 @@ class Scraper:
         """
         raise NotImplementedError
 
-    def get_location_data(self, query: str, type: Optional[str], **creds) -> Dict:
+    def get_location_data(self, query: str, type: Optional[str], ) -> Dict:
         """
         Get location data for a given location/type
         """
         try:
             if type == "city":
-                return self.get_city_data(query, **creds)
+                return self.get_city_data(query)
             elif type == "country":
-                return self.get_country_data(query, **creds)
+                return self.get_country_data(query)
             elif type == "region":
-                return self.get_region_data(query, **creds)
+                return self.get_region_data(query)
 
             raise LocationError("Invalid location type")
         except NotImplementedError:
             raise LocationError("Invalid location type")
 
-    def get_city_data(self, query: str, **creds) -> Dict:
+    def get_city_data(self, query: str) -> Dict:
         """
         Get city data for a given city
         """
         raise NotImplementedError
 
-    def get_country_data(self, query: str, **creds) -> Dict:
+    def get_country_data(self, query: str) -> Dict:
         """
         Get country data for a given country
         """
         raise NotImplementedError
 
-    def get_region_data(self, query: str, **creds) -> Dict:
+    def get_region_data(self, query: str) -> Dict:
         """
         Get region data for a given region
         """
         raise NotImplementedError
 
-    def get_credentials(self, proxy: Optional[Dict], timeout: int) -> Dict:
+    def test_connection(self, proxy: Dict, timeout: int) -> Tuple[bool, Optional[Dict]]:
         """
-        Get credentials
-        """
-        raise NotImplementedError
-
-    def test_connection(self, proxy: Dict, timeout: int) -> bool:
-        """
-        Test connection for a given proxy
+        Test connection for a given proxy, and return bool and credentials
         """
         raise NotImplementedError
 
@@ -143,6 +139,7 @@ class Scraper:
             data=kwargs.get("data"),
             json=kwargs.get("json"),
             transform=kwargs.get("transform"),
+            set_credentials=kwargs.get("set_credentials"),
             proxies=kwargs["proxies"] if kwargs.get("proxies") else self.proxies,
             timeout=kwargs["timeout"] if kwargs.get("timeout") else self.timeout,
             max_retries=kwargs["max_retries"]

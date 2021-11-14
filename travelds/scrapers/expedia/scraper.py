@@ -5,7 +5,7 @@ from travelds.exceptions import LocationError
 from travelds.scrapers.base import Scraper
 from travelds.exceptions import *
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Tuple
 
 import re
 import copy
@@ -13,6 +13,7 @@ import requests
 
 
 class Expedia(Scraper):
+    requires_credentials = False
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         session = requests.session()
@@ -196,7 +197,7 @@ class Expedia(Scraper):
 
         raise LocationError("Invalid country")
 
-    def test_connection(self, proxy: Dict, timeout: int) -> bool:
+    def test_connection(self, proxy: Dict, timeout: int) -> Tuple[bool, Optional[Dict[Any, Any]]]:
         return (
             requests.get(
                 "https://www.expedia.co.uk/",
@@ -204,5 +205,5 @@ class Expedia(Scraper):
                 proxies=proxy,
                 timeout=timeout,
             ).status_code
-            == 200
+            == 200, None
         )

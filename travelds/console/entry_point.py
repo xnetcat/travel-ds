@@ -3,7 +3,7 @@ from travelds.constants import *
 from travelds.exceptions import *
 from travelds import utils
 from travelds.etl import ETL
-from typing import List
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import logging
 
@@ -21,14 +21,14 @@ def console_entry_point():
         level=logging.DEBUG if arguments.verbose else logging.INFO,
         format="%(asctime)s :: %(module)s :: [%(levelname)s] %(message)s"
         if arguments.verbose
-        else "[%(levelname)s] [%(threadName)s] %(message)s",
+        else "[%(levelname)s] %(message)s",
     )
 
     # Set up the Scraper
     Scraper = SCRAPERS[arguments.scraper]
 
     # Fetch proxies from the provided sites
-    proxies: List = []
+    proxies: Any = []
     for proxy_provider in arguments.proxies:
         provider = PROXIES[proxy_provider]()
         provider.load_proxies()
@@ -52,14 +52,19 @@ def console_entry_point():
                 raise ProxiesError("No proxies were found, aborting.")
             logging.info(f"Found {len(proxies)} working proxies.")
         else:
+            if SCRAPERS[arguments.scraper].requires_credentials:
+                raise CredentialsError(
+                    "This scraper requires credentials, filter proxies to generate credentials."
+                )
             logging.info(f"Found {len(proxies)} proxies (unfiltred)")
+            proxies = [(proxy, None) for proxy in proxies]
 
     # Create the ETL object
     etl = ETL(
         scraper=SCRAPERS[arguments.scraper],
         currency=arguments.currency,
         threads=arguments.threads,
-        proxies=proxies,
+        proxies=None if len(proxies) == 0 else proxies,
         timeout=arguments.timeout,
         max_retries=arguments.max_retries,
     )
