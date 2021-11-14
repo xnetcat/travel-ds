@@ -1,9 +1,9 @@
-from typing import List
+from typing import List, Optional
 
 
 class ProxyProvider:
     def __init__(self) -> None:
-        self._proxies = None
+        self._proxies: Optional[List] = None
 
     def load_proxies(self) -> None:
         raise NotImplementedError

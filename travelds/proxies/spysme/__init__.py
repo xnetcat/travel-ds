@@ -9,4 +9,5 @@ class SpysMe(ProxyProvider):
         text = requests.get("https://www.spys.me/proxy.txt").text
         matches = re.findall(r"[0-9]+(?:\.[0-9]+){3}\:[0-9]+", text)
 
-        self._proxies = matches
+        if matches:
+            self._proxies = matches
