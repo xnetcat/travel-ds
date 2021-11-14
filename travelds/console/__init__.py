@@ -21,7 +21,7 @@ def console_entry_point():
         level=logging.DEBUG if arguments.verbose else logging.INFO,
         format="%(asctime)s :: %(module)s :: [%(levelname)s] %(message)s"
         if arguments.verbose
-        else "[%(levelname)s] %(message)s",
+        else "[%(levelname)s] [%(threadName)s] %(message)s",
     )
 
     # Set up the Scraper
