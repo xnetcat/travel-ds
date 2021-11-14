@@ -27,10 +27,13 @@ def split_list(l: List, n: int) -> List[List]:
     return new_list
 
 
-def update(d: Dict, u: Dict):
+def update(d: Optional[Dict], u: Dict):
     """
     Nested dict update
     """
+    if d is None:
+        d = {}
+
     for k, v in u.items():
         if isinstance(v, collections.abc.Mapping):
             d[k] = update(d.get(k, {}), v)  # type: ignore
@@ -88,7 +91,7 @@ def get_dates() -> List[Tuple[date, date]]:
 
 
 def test_proxy(
-    proxy: dict, func: Callable, max_retries: int, timeout: int = 5
+    proxy: Dict, func: Callable, max_retries: int, timeout: int = 5
 ) -> Tuple[bool, Optional[Dict]]:
     """
     Test proxy using provided function
@@ -137,12 +140,13 @@ def send_request(
     url: str,
     method: str = "get",
     proxies: List[Tuple[Dict, Optional[Dict]]] = None,
-    params: dict = None,
-    headers: dict = None,
+    params: Dict = None,
+    headers: Dict = None,
     data: str = None,
-    json: dict = None,
+    json: Dict = None,
     timeout: int = None,
     max_retries: int = 1,
+    cookies: Dict = None,
     transform: Callable = None,
     set_credentials: Callable = None,
 ):
@@ -160,7 +164,7 @@ def send_request(
         while True:
             try:
                 if proxy[1] and set_credentials:
-                    set_credentials(proxy[1]["uid"], headers, json, params)
+                    set_credentials(proxy[1], headers, json, params, cookies)
                 response = requests.request(
                     method=method,
                     url=url,
@@ -168,6 +172,7 @@ def send_request(
                     headers=headers,
                     json=json,
                     data=data,
+                    cookies=cookies,
                     timeout=timeout,
                     proxies=proxy[0],
                 )
@@ -185,6 +190,7 @@ def send_request(
             params=params,
             headers=headers,
             data=data,
+            cookies=cookies,
             json=json,
             timeout=timeout,
         )
