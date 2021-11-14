@@ -6,6 +6,7 @@ from itertools import cycle
 from travelds.exceptions import *
 
 import concurrent.futures
+import collections.abc
 import requests
 import random
 
@@ -25,6 +26,16 @@ def split_list(l: List, n: int) -> List[List]:
 
     return new_list
 
+def update(d: Dict, u: Dict):
+    """
+    Nested dict update
+    """
+    for k, v in u.items():
+        if isinstance(v, collections.abc.Mapping):
+            d[k] = update(d.get(k, {}), v) # type: ignore
+        else:
+            d[k] = v
+    return d
 
 def get_next_weekday(startdate: date, weekday: weekday, weeks: int = None) -> date:
     """
@@ -74,7 +85,7 @@ def get_dates() -> List[Tuple[date, date]]:
     return dates
 
 
-def test_proxy(proxy: dict, func: Callable, max_retries: int, timeout: int = 5) -> bool:
+def test_proxy(proxy: dict, func: Callable, max_retries: int, timeout: int = 5) -> Tuple[bool, Optional[Dict]]:
     """
     Test proxy using provided function
     """
@@ -82,13 +93,13 @@ def test_proxy(proxy: dict, func: Callable, max_retries: int, timeout: int = 5) 
     retries = 0
     while retries < max_retries:
         try:
-            works = func(None, proxy=proxy, timeout=timeout)
-        except:
+            works, creds = func(None, proxy=proxy, timeout=timeout)
+        except Exception:
             retries += 1
         else:
-            return works
+            return works, creds
 
-    return False
+    return False, None
 
 
 def filter_proxies(
@@ -97,12 +108,12 @@ def filter_proxies(
     threads: int = 1,
     max_retries: int = 1,
     timeout: int = 5,
-) -> List[Dict]:
+) -> List[Tuple[Dict, Optional[Dict]]]:
     """
     Filter proxies using provided function
     """
 
-    working_proxies: List[Dict] = []
+    working_proxies: List[Tuple[Dict, Optional[Dict]]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
         future_to_proxy = {
             executor.submit(test_proxy, proxy, func, max_retries, timeout): proxy
@@ -111,9 +122,9 @@ def filter_proxies(
 
         for future in concurrent.futures.as_completed(future_to_proxy):
             proxy = future_to_proxy[future]
-            working_proxy = future.result()
+            working_proxy, creds = future.result()
             if working_proxy is True:
-                working_proxies.append(proxy)
+                working_proxies.append((proxy, creds))
 
     return working_proxies
 
@@ -121,7 +132,7 @@ def filter_proxies(
 def send_request(
     url: str,
     method: str = "get",
-    proxies: List[Dict] = None,
+    proxies: List[Tuple[Dict, Optional[Dict]]] = None,
     params: dict = None,
     headers: dict = None,
     data: str = None,
@@ -129,6 +140,7 @@ def send_request(
     timeout: int = None,
     max_retries: int = 1,
     transform: Callable = None,
+    set_credentials: Callable = None,
 ):
     """
     Send request to url, will fail if we ran out of proxies
@@ -143,6 +155,8 @@ def send_request(
 
         while True:
             try:
+                if proxy[1] and set_credentials:
+                    set_credentials(proxy[1]["uid"], headers, json, params)
                 response = requests.request(
                     method=method,
                     url=url,
@@ -151,7 +165,7 @@ def send_request(
                     json=json,
                     data=data,
                     timeout=timeout,
-                    proxies=proxy,
+                    proxies=proxy[0],
                 )
 
                 return transform(response) if transform else response
