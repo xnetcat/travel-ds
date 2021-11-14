@@ -56,9 +56,10 @@ class ETL:
                 try:
                     results = future.result()
                 except Exception as exc:
-                    print(
-                        f"{date_data[0]} {date_data[1]}/{date_data[2]} generated an exception: {exc}"
+                    logging.error(
+                        f"{date_data[0]} {date_data[1]}/{date_data[2]} generated an exception"
                     )
+                    logging.error(exc)
                 else:
                     logging.info(
                         f"Finished {date_data[0]} {date_data[1]}/{date_data[2]} = {len(results)}"
