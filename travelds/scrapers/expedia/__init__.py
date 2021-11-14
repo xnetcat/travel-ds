@@ -1,13 +1,11 @@
-from travelds.exceptions import LocationError
-from travelds.scrapers.expedia.constants import *
-from travelds.exceptions import *
-from travelds.scrapers.expedia.graphql.search import SEARCH_QUERY
-from travelds.scrapers.expedia.graphql.listing import LISTING_QUERY
-from travelds.scrapers.base import Scraper
+from travelds.scrapers.expedia.graphql import SEARCH_QUERY, LISTING_QUERY
 from travelds.etl.models import ExpediaListing, ExpediaPrice
-from travelds import utils
+from travelds.scrapers.expedia.constants import *
+from travelds.exceptions import LocationError
+from travelds.scrapers.base import Scraper
+from travelds.exceptions import *
 from datetime import datetime
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import re
 import copy
@@ -23,6 +21,7 @@ class Expedia(Scraper):
         self.batch = 500
         self.Listing = ExpediaListing
         self.Price = ExpediaPrice
+        self.headers = HEADERS
 
     def get_listings(
         self, location: Dict, checkin: str, checkout: str, offset: int
@@ -30,7 +29,7 @@ class Expedia(Scraper):
         checkin_datetime = datetime.strptime(checkin, "%Y-%m-%d")
         checkout_datetime = datetime.strptime(checkout, "%Y-%m-%d")
 
-        search_variables = copy.deepcopy(SEARCH_VARIABLES)
+        search_variables: Dict[str, Any] = copy.deepcopy(SEARCH_VARIABLES)
         search_variables["currency"] = self.currency
         search_variables["context"]["identity"]["duaid"] = self.duaid
         search_variables["destination"]["regionName"] = location["regionNames"][
@@ -51,18 +50,14 @@ class Expedia(Scraper):
         search_variables["dateRange"]["checkOutDate"]["month"] = checkout_datetime.month
         search_variables["dateRange"]["checkOutDate"]["year"] = checkout_datetime.year
 
-        response: Dict = utils.send_request(
+        response: Dict = self.send_request(
             url=BASE_URL,
             method="post",
-            proxies=self.proxies,
-            headers=HEADERS,
             json={
                 "query": SEARCH_QUERY,
                 "operationName": "LodgingPwaPropertySearch",
                 "variables": search_variables,
             },
-            timeout=self.timeout,
-            max_retries=self.max_retries,
             transform=lambda x: x.json(),
         )  # type: ignore
 
@@ -78,10 +73,8 @@ class Expedia(Scraper):
                 "checkin": checkin,
                 "checkout": checkout,
                 "currency": self.currency,
-                "price": float(
-                    re.sub(r"[^0-9|\.]", "", listing["price"]["lead"]["formatted"])
-                ),
-                "available": listing["availability"]["available"],
+                "price": float(re.sub(r"[^0-9|\.]", "", listing.get("price", {}).get("lead", {}).get("formatted", None))) if listing.get("price", {}).get("lead", {}).get("formatted", None) else None,
+                "available": listing.get("availability", {}).get("available", None),
             }
             for listing in response["data"]["propertySearch"]["propertySearchListings"]
             if listing["__typename"] == "Property"
@@ -91,7 +84,7 @@ class Expedia(Scraper):
         checkin_datetime = datetime.strptime(checkin, "%Y-%m-%d")
         checkout_datetime = datetime.strptime(checkout, "%Y-%m-%d")
 
-        search_variables = copy.deepcopy(SEARCH_VARIABLES)
+        search_variables: Dict[str, Any] = copy.deepcopy(SEARCH_VARIABLES)
         search_variables["currency"] = self.currency
         search_variables["context"]["identity"]["duaid"] = self.duaid
         search_variables["destination"]["regionName"] = location["regionNames"][
@@ -112,18 +105,14 @@ class Expedia(Scraper):
         search_variables["dateRange"]["checkOutDate"]["month"] = checkout_datetime.month
         search_variables["dateRange"]["checkOutDate"]["year"] = checkout_datetime.year
 
-        response: Dict = utils.send_request(
+        response: Dict = self.send_request(
             url=BASE_URL,
             method="post",
-            proxies=self.proxies,
-            headers=HEADERS,
             json={
                 "query": SEARCH_QUERY,
                 "operationName": "LodgingPwaPropertySearch",
                 "variables": search_variables,
             },
-            timeout=self.timeout,
-            max_retries=self.max_retries,
             transform=lambda x: x.json(),
         )  # type: ignore
 
@@ -133,7 +122,7 @@ class Expedia(Scraper):
         checkin_datetime = datetime.strptime(checkin, "%Y-%m-%d")
         checkout_datetime = datetime.strptime(checkout, "%Y-%m-%d")
 
-        listing_variables = copy.deepcopy(LISTING_VARIABLES)
+        listing_variables: Dict[str, Any] = copy.deepcopy(LISTING_VARIABLES)
         listing_variables["currency"] = self.currency
         listing_variables["context"]["identity"]["duaid"] = self.duaid
         listing_variables["propertyId"] = str(id)
@@ -156,18 +145,14 @@ class Expedia(Scraper):
             "year"
         ] = checkout_datetime.year
 
-        response: Dict = utils.send_request(
+        response: Dict = self.send_request(
             url=BASE_URL,
             method="post",
-            proxies=self.proxies,
-            headers=HEADERS,
-            timeout=self.timeout,
             json={
                 "query": LISTING_QUERY,
                 "operationName": "PropertyOffers",
                 "variables": listing_variables,
             },
-            max_retries=self.max_retries,
             transform=lambda x: x.json(),
         )  # type: ignore
 
@@ -189,16 +174,10 @@ class Expedia(Scraper):
 
         raise ListingError("Could not find listing data")
 
-    def get_city_data(self, query: str) -> Dict:
-        response: Dict = utils.send_request(
+    def get_city_data(self, query: str, **_creds) -> Dict:
+        response: Dict = self.send_request(
             url=CITY_URL + query,
-            method="get",
-            proxies=self.proxies,
-            params=CITY_PARAMS,
-            headers=HEADERS,
             data="",
-            timeout=self.timeout,
-            max_retries=self.max_retries,
             transform=lambda x: x.json(),
         )  # type: ignore
 

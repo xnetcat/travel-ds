@@ -1,33 +1,28 @@
 from travelds.exceptions import LocationError
 from travelds.scrapers.base import Scraper
 from travelds.scrapers.hotels.constants import *
-from travelds.scrapers.hotels.graphql.listing import LISTING_QUERY
-from travelds.scrapers.hotels.graphql.search import SEARCH_QUERY
+from travelds.scrapers.hotels.graphql import LISTING_QUERY, SEARCH_QUERY
 from travelds.etl.models import HotelsListing, HotelsPrice
-from travelds import utils
-from typing import Dict, Optional, List
+from typing import Any, Dict, List
 
 import json
 import copy
 import requests
 import re
-import logging
-
 
 class Hotels(Scraper):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         HEADERS["x-currency"] = self.currency
-        self.search_query = SEARCH_QUERY
-        self.listing_query = LISTING_QUERY
         self.batch = 10
         self.Listing = HotelsListing
         self.Price = HotelsPrice
+        self.headers = HEADERS
 
     def get_listings(
         self, location: Dict, checkin: str, checkout: str, offset: int = 0
     ) -> List[Dict]:
-        search_variables = copy.deepcopy(SEARCH_VARIABLES)
+        search_variables: Dict[str, Any] = copy.deepcopy(SEARCH_VARIABLES)
         search_variables["sqmState"]["destination"]["id"] = location["destinationId"]
         search_variables["sqmState"]["destination"]["value"] = (
             location.get("name")
@@ -44,24 +39,16 @@ class Hotels(Scraper):
             (offset * 10) if offset > 0 else 0
         )
 
-        response: Dict = utils.send_request(
-            BASE_URL,
+        response: Dict = self.send_request(
+            url=BASE_URL,
             method="post",
-            proxies=self.proxies,
             json={
                 "operationName": "searchPageQuery",
                 "variables": search_variables,
                 "query": SEARCH_QUERY,
             },
-            headers=HEADERS,
-            timeout=self.timeout,
-            max_retries=self.max_retries,
             transform=lambda x: x.json(),
         )  # type: ignore
-
-        logging.debug(
-            f"{search_variables['sqmState']['destination']['value']} - Finished offset {offset}"
-        )
 
         return [
             {
@@ -85,24 +72,20 @@ class Hotels(Scraper):
             ]
         ]
 
-    def get_listing_data(self, id: int, checkin: str, checkout: str) -> Optional[Dict]:
-        listing_variables = copy.deepcopy(LISTING_VARIABLES)
+    def get_listing_data(self, id: int, checkin: str, checkout: str) -> Dict:
+        listing_variables: Dict[str, Any] = copy.deepcopy(LISTING_VARIABLES)
         listing_variables["sqmState"]["destination"]["id"] = str(id)
         listing_variables["sqmState"]["checkIn"] = checkin
         listing_variables["sqmState"]["checkOut"] = checkout
 
-        response: Dict = utils.send_request(
-            BASE_URL,
+        response: Dict = self.send_request(
+            url=BASE_URL,
             method="post",
-            proxies=self.proxies,
             json={
                 "operationName": "propertyPageQuery",
                 "variables": listing_variables,
                 "query": LISTING_QUERY,
             },
-            headers=HEADERS,
-            timeout=self.timeout,
-            max_retries=self.max_retries,
             transform=lambda x: x.json(),
         )  # type: ignore
 
@@ -140,7 +123,7 @@ class Hotels(Scraper):
         }
 
     def get_total_count(self, location: Dict, checkin: str, checkout: str) -> int:
-        search_variables = copy.deepcopy(SEARCH_VARIABLES)
+        search_variables: Dict[str, Any] = copy.deepcopy(SEARCH_VARIABLES)
         search_variables["sqmState"]["destination"]["id"] = location["destinationId"]
         search_variables["sqmState"]["destination"]["value"] = (
             location.get("name")
@@ -154,18 +137,14 @@ class Hotels(Scraper):
         search_variables["sqmState"]["checkOut"] = checkout
         search_variables["pagination"]["pn"] = 0
         search_variables["pagination"]["startIndex"] = 0
-        response: Dict = utils.send_request(
+        response: Dict = self.send_request(
             url=BASE_URL,
             method="post",
-            proxies=self.proxies,
             json={
                 "operationName": "searchPageQuery",
                 "variables": search_variables,
                 "query": SEARCH_QUERY,
             },
-            headers=HEADERS,
-            timeout=self.timeout,
-            max_retries=self.max_retries,
             transform=lambda x: x.json(),
         )  # type: ignore
 
@@ -184,19 +163,15 @@ class Hotels(Scraper):
             == 200
         )
 
-    def get_city_data(self, query: str) -> Optional[Dict]:
-        params = copy.deepcopy(CITY_PARAMS)
+    def get_city_data(self, query: str, **_creds) -> Dict:
+        params: Dict[str, Any] = copy.deepcopy(CITY_PARAMS)
         params["query"] = query
         params["currency"] = self.currency
 
-        response: Dict = utils.send_request(
+        response: Dict = self.send_request(
             url=COUNTRY_URL,
             method="get",
-            proxies=self.proxies,
             params=params,
-            headers=HEADERS,
-            timeout=self.timeout,
-            max_retries=self.max_retries,
             transform=lambda x: x.json(),
         )  # type: ignore
 
@@ -208,19 +183,15 @@ class Hotels(Scraper):
 
         raise LocationError("Invalid city")
 
-    def get_country_data(self, query: str) -> Optional[Dict]:
-        params = copy.deepcopy(COUNTRY_PARAMS)
+    def get_country_data(self, query: str, **_creds) -> Dict:
+        params: Dict[str, Any] = copy.deepcopy(COUNTRY_PARAMS)
         params["query"] = query
         params["currency"] = self.currency
 
-        response: Dict = utils.send_request(
+        response: Dict = self.send_request(
             url=COUNTRY_URL,
             method="get",
-            proxies=self.proxies,
             params=params,
-            headers=HEADERS,
-            timeout=self.timeout,
-            max_retries=self.max_retries,
             transform=lambda x: json.loads(x.text.split("(", 1)[1].rsplit(")", 1)[0]),
         )  # type: ignore
 
