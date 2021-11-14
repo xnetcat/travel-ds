@@ -1,4 +1,4 @@
-from typing import List, Dict, Literal, Optional
+from typing import Any, List, Dict, Literal, Optional
 from travelds.exceptions import *
 from travelds import utils
 
@@ -42,8 +42,8 @@ class Scraper:
         location = self.get_location_data(query, type)
         total_count = self.get_total_count(location, checkin, checkout)
         num_pages = int(total_count / self.batch)
-        offsets = list(range(num_pages))
-        logging.info(f"{total_count} listings found for {query} {checkin}/{checkout}")
+        offsets = list(range(num_pages+1))
+        logging.info(f"{total_count} listings found for {query} {checkin}/{checkout} - {offsets}")
 
         results = []
         with concurrent.futures.ThreadPoolExecutor(
@@ -67,14 +67,14 @@ class Scraper:
         return results
 
     def get_listings(
-        self, location: Dict, checkin: str, checkout: str, offset: int
+        self, location: Dict[str, Any], checkin: str, checkout: str, offset: int
     ) -> List[Dict]:
         """
         Get listing for a given location/checkin/checkout/offset
         """
         raise NotImplementedError
 
-    def get_total_count(self, location: Dict, checkin: str, checkout: str) -> int:
+    def get_total_count(self, location: Dict[str, Any], checkin: str, checkout: str) -> int:
         """
         Get total count of listings for a given location/checkin/checkout
         """
