@@ -64,7 +64,6 @@ class Scraper:
                 except Exception as exc:
                     logging.exception("%r generated an exception: %s" % (offset, exc))
 
-        logging.info(f"{len(results)} listings found for {query} {checkin}/{checkout}")
         return results
 
     def get_listings(
