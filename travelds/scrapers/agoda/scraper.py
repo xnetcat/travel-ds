@@ -181,12 +181,12 @@ class Agoda(Scraper):
                 {
                     "variables": {
                         "PricingSummaryRequest": {
-                            "context": {"clientInfo": {"userId": credits}}
+                            "context": {"clientInfo": {"userId": credits["uid"]}},
                         },
                         "CitySearchRequest": {
-                            "searchRequest": {"searchContext": {"userId": credits}}
+                            "searchRequest": {"searchContext": {"userId": credits["uid"]}}
                         },
-                        "ContentSummaryRequest": {"context": {"rawUserId": credits}},
+                        "ContentSummaryRequest": {"context": {"rawUserId": credits["uid"]}},
                     }
                 },
             )
