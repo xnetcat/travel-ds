@@ -140,6 +140,7 @@ class Scraper:
 
         return utils.send_request(
             url=kwargs["url"],
+            method=kwargs.get("method", "get"),
             params=kwargs.get("params"),
             data=kwargs.get("data"),
             json=kwargs.get("json"),
