@@ -3,7 +3,7 @@ from travelds.constants import *
 from travelds.exceptions import *
 from travelds import utils
 from travelds.etl import ETL
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import logging
 
@@ -23,6 +23,9 @@ def console_entry_point():
         if arguments.verbose
         else "[%(levelname)s] %(message)s",
     )
+
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
 
     # Set up the Scraper
     Scraper = SCRAPERS[arguments.scraper]

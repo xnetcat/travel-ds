@@ -1,3 +1,4 @@
+import logging
 from travelds.scrapers.agoda.graphql import SEARCH_QUERY
 from travelds.scrapers.agoda.constants import *
 from travelds.scrapers.base import Scraper
@@ -34,6 +35,8 @@ class Agoda(Scraper):
         self, location: Dict, checkin: str, checkout: str, offset: int
     ) -> List[Dict]:
         response = self.send_listings_request(location, checkin, checkout, offset)
+
+        logging.debug(f'Finished offset {offset} {location["Name"]} {checkin}/{checkout}')
 
         listings: List[Dict] = []
         for listing in response["data"]["citySearch"]["properties"]:

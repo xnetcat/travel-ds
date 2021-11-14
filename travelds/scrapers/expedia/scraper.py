@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import re
 import copy
+import logging
 import requests
 
 
@@ -20,7 +21,7 @@ class Expedia(Scraper):
         session = requests.session()
         session.get("https://expedia.co.uk/")
         self.duaid = session.cookies.get("DUAID")
-        self.batch = 500
+        self.batch_size = 500
         self.Listing = ExpediaListing
         self.Price = ExpediaPrice
         self.headers = HEADERS
@@ -62,6 +63,8 @@ class Expedia(Scraper):
             },
             transform=lambda x: x.json(),
         )  # type: ignore
+
+        logging.debug(f'Finished {offset} {re.sub(r"<.*?>", r"", search_variables["destination"]["regionName"])} {checkin}/{checkout}')
 
         return [
             {

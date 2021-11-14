@@ -1,9 +1,7 @@
 from travelds.scrapers import Hotels, Expedia, Agoda
 from travelds.proxies import SpysMe
 
-
 SCRAPERS = {"hotels": Hotels, "expedia": Expedia, "agoda": Agoda}
-
 PROXIES = {"spys.me": SpysMe}
 
 CITIES = [

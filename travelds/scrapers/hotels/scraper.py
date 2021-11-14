@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import json
 import copy
 import requests
+import logging
 import re
 
 
@@ -50,8 +51,12 @@ class Hotels(Scraper):
                 "variables": search_variables,
                 "query": SEARCH_QUERY,
             },
-            transform=lambda x: x.json(),
+            transform=lambda x: x.json()["data"]["searchPage"]["body"]["searchResults"][
+                "results"
+            ],
         )  # type: ignore
+
+        logging.debug(f'Finished offset {offset} {search_variables["sqmState"]["destination"]["value"]} {checkin}/{checkout}')
 
         return [
             {
@@ -70,9 +75,7 @@ class Hotels(Scraper):
                 "checkin": checkin,
                 "checkout": checkout,
             }
-            for listing in response["data"]["searchPage"]["body"]["searchResults"][
-                "results"
-            ]
+            for listing in response
         ]
 
     def get_listing_data(self, id: int, checkin: str, checkout: str) -> Dict:
