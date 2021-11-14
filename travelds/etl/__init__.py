@@ -1,6 +1,6 @@
 import logging
 
-from typing import Callable, List, Dict
+from typing import Callable, List, Dict, Optional, Tuple
 from travelds import utils
 
 import concurrent.futures
@@ -13,7 +13,7 @@ class ETL:
         scraper: Callable,
         currency: str = "USD",
         threads: int = 1,
-        proxies: List[Dict] = None,
+        proxies: List[Tuple[Dict, Optional[Dict]]] = None,
         timeout: int = 5,
         max_retries: int = 1,
     ) -> None:

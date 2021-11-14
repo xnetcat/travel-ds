@@ -16,7 +16,7 @@ class Hotels(Scraper):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         HEADERS["x-currency"] = self.currency
-        self.batch = 10
+        self.batch_size = 10
         self.Listing = HotelsListing
         self.Price = HotelsPrice
         self.headers = HEADERS
