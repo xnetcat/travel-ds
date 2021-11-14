@@ -36,7 +36,9 @@ class Agoda(Scraper):
     ) -> List[Dict]:
         response = self.send_listings_request(location, checkin, checkout, offset)
 
-        logging.debug(f'Finished offset {offset} {location["Name"]} {checkin}/{checkout}')
+        logging.debug(
+            f'Finished offset {offset} {location["Name"]} {checkin}/{checkout}'
+        )
 
         listings: List[Dict] = []
         for listing in response["data"]["citySearch"]["properties"]:
@@ -205,13 +207,13 @@ class Agoda(Scraper):
 
         view_list = response.get("ViewModelList")
         if view_list is None:
-            raise LocationError("City not found")
+            raise LocationError(f"Could not find city: {query}")
 
         for city in view_list:
             if city["SearchType"] == 1:
                 return city
 
-        raise LocationError("City not found")
+        raise LocationError(f"Could not find city: {query}")
 
     def get_credentials(self, proxy: Optional[Dict], timeout: int) -> Optional[Dict]:
         response = requests.get(

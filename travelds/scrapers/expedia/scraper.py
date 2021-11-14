@@ -64,7 +64,9 @@ class Expedia(Scraper):
             transform=lambda x: x.json(),
         )  # type: ignore
 
-        logging.debug(f'Finished {offset} {re.sub(r"<.*?>", r"", search_variables["destination"]["regionName"])} {checkin}/{checkout}')
+        logging.debug(
+            f'Finished {offset} {re.sub(r"<.*?>", r"", search_variables["destination"]["regionName"])} {checkin}/{checkout}'
+        )
 
         return [
             {
@@ -199,7 +201,7 @@ class Expedia(Scraper):
                 result["q"] = query
                 return result
 
-        raise LocationError("Invalid country")
+        raise LocationError(f"Could not find city: {query}")
 
     def test_connection(
         self, proxy: Dict, timeout: int

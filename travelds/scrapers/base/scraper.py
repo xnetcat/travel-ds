@@ -106,9 +106,9 @@ class Scraper:
             elif type == "region":
                 return self.get_region_data(query)
 
-            raise LocationError("Invalid location type")
+            raise LocationError(f"Invalid location type: {type}")
         except NotImplementedError:
-            raise LocationError("Invalid location type")
+            raise LocationError(f"Invalid location type: {type}")
 
     def get_city_data(self, query: str) -> Dict:
         """

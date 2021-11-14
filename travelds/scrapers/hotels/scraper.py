@@ -56,7 +56,9 @@ class Hotels(Scraper):
             ],
         )  # type: ignore
 
-        logging.debug(f'Finished offset {offset} {search_variables["sqmState"]["destination"]["value"]} {checkin}/{checkout}')
+        logging.debug(
+            f'Finished offset {offset} {search_variables["sqmState"]["destination"]["value"]} {checkin}/{checkout}'
+        )
 
         return [
             {
@@ -172,7 +174,7 @@ class Hotels(Scraper):
             None,
         )
 
-    def get_city_data(self, query: str, **_creds) -> Dict:
+    def get_city_data(self, query: str) -> Dict:
         params: Dict[str, Any] = copy.deepcopy(CITY_PARAMS)
         params["query"] = query
         params["currency"] = self.currency
@@ -190,9 +192,9 @@ class Hotels(Scraper):
                     if city["type"] == "CITY":
                         return city
 
-        raise LocationError("Invalid city")
+        raise LocationError(f"Could not find city: {query}")
 
-    def get_country_data(self, query: str, **_creds) -> Dict:
+    def get_country_data(self, query: str) -> Dict:
         params: Dict[str, Any] = copy.deepcopy(COUNTRY_PARAMS)
         params["query"] = query
         params["currency"] = self.currency
@@ -208,4 +210,4 @@ class Hotels(Scraper):
             if suggestion["type"] in ["COUNTRY", "STATE"]:
                 return suggestion
 
-        raise LocationError("Invalid country")
+        raise LocationError(f"Could not find country: {query}")
