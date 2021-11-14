@@ -53,16 +53,20 @@ class ETL:
             }
             for future in concurrent.futures.as_completed(future_to_date_data):
                 date_data = future_to_date_data[future]
-                results = future.result()
-                logging.info(
-                    f"Finished {date_data[0]} {date_data[1]}/{date_data[2]} = {len(results)}"
-                )
-                for result in results:
-                    try:
-                        self.add_listing(result)
-                    except Exception as e:
-                        logging.error(f"Error adding listing {result['id']}")
-                        logging.error(e)
+                try:
+                    results = future.result()
+                except Exception as exc:
+                    print(f'{date_data[0]} {date_data[1]}/{date_data[2]} generated an exception: {exc}')
+                else:
+                    logging.info(
+                        f"Finished {date_data[0]} {date_data[1]}/{date_data[2]} = {len(results)}"
+                    )
+                    for result in results:
+                        try:
+                            self.add_listing(result)
+                        except Exception as e:
+                            logging.error(f"Error adding listing {result['id']}")
+                            logging.error(e)
 
     def add_price(self, listing, checkin, checkout):
         price_data = self.scraper.get_listing_data(
