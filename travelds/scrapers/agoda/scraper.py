@@ -83,7 +83,7 @@ class Agoda(Scraper):
             if script_tag.string and "agoda.pageConfig" in script_tag.string:
                 results = re.search(r"\"userId\":\"([\w-]+)\"", script_tag.string)
                 if results is not None:
-                    print({"uid": results.group(1)})
+                    return ({"uid": results.group(1)})
 
         raise CredentialsError("Credentials not found")
 
