@@ -1,8 +1,10 @@
-CITY_URL = (
-    "https://www.agoda.com/api/cronos/search/GetUnifiedSuggestResult/3/1/1/0/en-us/"
-)
+from typing import Any, Dict
+
+
 BASE_URL = "https://www.agoda.com/"
-SEARCH_URL = "https://www.agoda.com/graphql/search"
+CITY_URL = BASE_URL + "api/cronos/search/GetUnifiedSuggestResult/3/1/1/0/en-us/"
+SEARCH_URL = BASE_URL + "graphql/search"
+LISTING_URL = BASE_URL + "api/cronos/property/BelowFoldParams/GetSecondaryData"
 
 HEADERS = {
     "authority": "www.agoda.com",
@@ -389,34 +391,26 @@ SEARCH_VARIABLES = {
     "PriceStreamMetaLabRequest": {"attributesId": [8, 1, 18, 7, 11, 2, 3]},
 }
 
-LISTING_VARIABLES = {
-    "context": {
-        "siteId": 3,
-        "locale": "en_GB",
-        "eapid": 0,
-        "currency": None,
-        "device": {"type": "DESKTOP"},
-        "identity": {
-            "duaid": None,
-            "expUserId": "-1",
-            "tuid": "-1",
-            "authState": "ANONYMOUS",
-        },
-        "privacyTrackingState": "CAN_TRACK",
-        "debugContext": {"abacusOverrides": [], "alterMode": "RELEASED"},
-    },
-    "propertyId": None,
-    "searchCriteria": {
-        "primary": {
-            "dateRange": {
-                "checkInDate": {"day": None, "month": None, "year": None},
-                "checkOutDate": {"day": None, "month": None, "year": None},
-            },
-            "destination": {},
-            "rooms": [{"adults": 1, "children": []}],
-        },
-        "secondary": {"counts": [], "booleans": [], "selections": []},
-    },
-    "shoppingContext": {"multiItem": None},
-    "referrer": "HSR",
+LISTING_PARAMS: Dict[str, Any] = {
+    "finalPriceView": "2",
+    "isShowMobileAppPrice": "false",
+    "cid": "-1",
+    "numberOfBedrooms": "",
+    "familyMode": "false",
+    "adults": "1",
+    "children": "0",
+    "rooms": "1",
+    "maxRooms": "0",
+    "isCalendarCallout": "false",
+    "childAges": "",
+    "numberOfGuest": "0",
+    "missingChildAges": "false",
+    "travellerType": "0",
+    "showReviewSubmissionEntry": "false",
+    "isFreeOccSearch": "false",
+    "isCityHaveAsq": "false",
+    "tspTypes": "16",
+    "all": "true",
+    "price_view": "2",
+    "pagetypeid": "7",
 }
