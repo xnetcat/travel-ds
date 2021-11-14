@@ -43,7 +43,6 @@ class Scraper:
         total_count = self.get_total_count(location, checkin, checkout)
         num_pages = int(total_count / self.batch)
         offsets = list(range(num_pages+1))
-        logging.info(f"{total_count} listings found for {query} {checkin}/{checkout} - {offsets}")
 
         results = []
         with concurrent.futures.ThreadPoolExecutor(

@@ -62,7 +62,7 @@ class ETL:
                     logging.error(exc)
                 else:
                     logging.info(
-                        f"Finished {date_data[0]} {date_data[1]}/{date_data[2]} = {len(results)}"
+                        f"Finished {date_data[0]} {date_data[1]}/{date_data[2]} - {len(results)} results"
                     )
                     for result in results:
                         try:
