@@ -26,16 +26,18 @@ def split_list(l: List, n: int) -> List[List]:
 
     return new_list
 
+
 def update(d: Dict, u: Dict):
     """
     Nested dict update
     """
     for k, v in u.items():
         if isinstance(v, collections.abc.Mapping):
-            d[k] = update(d.get(k, {}), v) # type: ignore
+            d[k] = update(d.get(k, {}), v)  # type: ignore
         else:
             d[k] = v
     return d
+
 
 def get_next_weekday(startdate: date, weekday: weekday, weeks: int = None) -> date:
     """
@@ -85,7 +87,9 @@ def get_dates() -> List[Tuple[date, date]]:
     return dates
 
 
-def test_proxy(proxy: dict, func: Callable, max_retries: int, timeout: int = 5) -> Tuple[bool, Optional[Dict]]:
+def test_proxy(
+    proxy: dict, func: Callable, max_retries: int, timeout: int = 5
+) -> Tuple[bool, Optional[Dict]]:
     """
     Test proxy using provided function
     """

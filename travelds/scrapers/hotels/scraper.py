@@ -13,6 +13,7 @@ import re
 
 class Hotels(Scraper):
     requires_credentials = False
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         HEADERS["x-currency"] = self.currency
@@ -155,14 +156,17 @@ class Hotels(Scraper):
         ]
         return 840 if total_count > 840 else total_count
 
-    def test_connection(self, proxy: Dict = None, timeout: int = 10) -> Tuple[bool, Optional[Dict[Any, Any]]]:
+    def test_connection(
+        self, proxy: Dict = None, timeout: int = 10
+    ) -> Tuple[bool, Optional[Dict[Any, Any]]]:
         return (
             requests.get(
                 "https://www.hotels.com/",
                 proxies=proxy,
                 timeout=timeout,
             ).status_code
-            == 200, None
+            == 200,
+            None,
         )
 
     def get_city_data(self, query: str, **_creds) -> Dict:

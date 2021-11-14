@@ -8,6 +8,7 @@ import logging
 
 class Scraper:
     requires_credentials = None
+
     def __init__(
         self,
         currency: str,
@@ -44,7 +45,7 @@ class Scraper:
         location = self.get_location_data(query, type)
         total_count = self.get_total_count(location, checkin, checkout)
         num_pages = int(total_count / self.batch_size)
-        offsets = list(range(num_pages+1))
+        offsets = list(range(num_pages + 1))
 
         results = []
         with concurrent.futures.ThreadPoolExecutor(
@@ -75,7 +76,9 @@ class Scraper:
         """
         raise NotImplementedError
 
-    def get_total_count(self, location: Dict[str, Any], checkin: str, checkout: str) -> int:
+    def get_total_count(
+        self, location: Dict[str, Any], checkin: str, checkout: str
+    ) -> int:
         """
         Get total count of listings for a given location/checkin/checkout
         """
@@ -87,7 +90,11 @@ class Scraper:
         """
         raise NotImplementedError
 
-    def get_location_data(self, query: str, type: Optional[str], ) -> Dict:
+    def get_location_data(
+        self,
+        query: str,
+        type: Optional[str],
+    ) -> Dict:
         """
         Get location data for a given location/type
         """

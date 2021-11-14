@@ -1,5 +1,4 @@
 from travelds.scrapers import Hotels, Expedia, Agoda
-
 from travelds.proxies import SpysMe
 
 

@@ -15,6 +15,7 @@ import re
 
 class Agoda(Scraper):
     requires_credentials = True
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.today = date.today().strftime("%Y-%m-%d") + "T20:00:00.000Z"
@@ -29,7 +30,9 @@ class Agoda(Scraper):
 
         self.uid = credentials["uid"]
 
-    def get_listings(self, location: Dict, checkin: str, checkout: str, offset: int) -> List[Dict]:
+    def get_listings(
+        self, location: Dict, checkin: str, checkout: str, offset: int
+    ) -> List[Dict]:
         response = self.send_listings_request(location, checkin, checkout, offset)
 
         listings: List[Dict] = []
@@ -46,24 +49,33 @@ class Agoda(Scraper):
                 available = listing["pricing"]["isAvailable"]
                 price = pricing["price"]["perNight"]["exclusive"]["display"]
 
-            listings.append({
+            listings.append(
+                {
                     "id": listing["propertyId"],
                     "name": content["informationSummary"]["displayName"],
                     "city": location["Name"],
                     "lat": content["informationSummary"]["geoInfo"]["latitude"],
                     "lon": content["informationSummary"]["geoInfo"]["longitude"],
-                    "room_and_property_type": content["informationSummary"]["propertyType"],
-                    "url": "https://www.agoda.com" + content["informationSummary"]["propertyLinks"]["propertyPage"] if content["informationSummary"]["propertyLinks"] else None,
+                    "room_and_property_type": content["informationSummary"][
+                        "propertyType"
+                    ],
+                    "url": "https://www.agoda.com"
+                    + content["informationSummary"]["propertyLinks"]["propertyPage"]
+                    if content["informationSummary"]["propertyLinks"]
+                    else None,
                     "rate_with_service_fee": price,
                     "currency": self.currency,
                     "available": available,
                     "checkin": checkin,
                     "checkout": checkout,
-                    "country_name": content["informationSummary"]["address"]["country"]["name"],
-                    "hotel_stars": int(content["reviews"]["cumulative"]["score"]) if content[
-                        "reviews"
-                    ]["cumulative"] else None,
-                })
+                    "country_name": content["informationSummary"]["address"]["country"][
+                        "name"
+                    ],
+                    "hotel_stars": int(content["reviews"]["cumulative"]["score"])
+                    if content["reviews"]["cumulative"]
+                    else None,
+                }
+            )
 
         return listings
 
@@ -82,24 +94,26 @@ class Agoda(Scraper):
             url=LISTING_URL,
             params=listing_params,
             transform=lambda x: x.json(),
-        ) # type: ignore
+        )  # type: ignore
 
         price = float(response["inquiryProperty"]["cheapestPrice"])
         return {
             "rate_with_service_fee": price if price > 0 else None,
             "available": True if price > 0 else False,
             "currency": self.currency,
-            "room_count": response["numberOfFitRoom"] + response["numberOfNotFitRoom"]
+            "room_count": response["numberOfFitRoom"] + response["numberOfNotFitRoom"],
         }
 
     def get_total_count(self, location: Dict, checkin: str, checkout: str) -> int:
-        response = self.send_listings_request(location, checkin, checkout, 0)        
+        response = self.send_listings_request(location, checkin, checkout, 0)
 
         return response["data"]["citySearch"]["searchResult"]["searchInfo"][
             "totalFilteredHotels"
         ]
 
-    def send_listings_request(self, location: Dict, checkin: str, checkout: str, offset: int) -> Dict:
+    def send_listings_request(
+        self, location: Dict, checkin: str, checkout: str, offset: int
+    ) -> Dict:
         search_variables: Dict[str, Any] = copy.deepcopy(SEARCH_VARIABLES)
         search_variables["ContentSummaryRequest"]["context"]["searchCriteria"][
             "cityId"
@@ -136,7 +150,9 @@ class Agoda(Scraper):
             "currency"
         ] = self.currency
 
-        search_variables["CitySearchRequest"]["searchRequest"]["page"]["pageNumber"] = offset
+        search_variables["CitySearchRequest"]["searchRequest"]["page"][
+            "pageNumber"
+        ] = offset
 
         if not self.proxies:
             search_variables["PricingSummaryRequest"]["context"]["clientInfo"][
@@ -155,29 +171,22 @@ class Agoda(Scraper):
                 "variables": search_variables,
                 "query": SEARCH_QUERY,
             },
-            set_credentials=lambda credits, _headers, json, _params: update(json, {
-                "variables": {
-                    "PricingSummaryRequest": {
-                        "context": {
-                            "clientInfo": {
-                                "userId": credits
-                            }
-                        }
-                    },
-                    "CitySearchRequest": {
-                        "searchRequest": {
-                            "searchContext": {
-                                "userId": credits
-                            }
-                        }
-                    },
-                    "ContentSummaryRequest": {
-                        "context": {
-                            "rawUserId": credits
-                        }
+            set_credentials=lambda credits, _headers, json, _params: update(
+                json,
+                {
+                    "variables": {
+                        "PricingSummaryRequest": {
+                            "context": {"clientInfo": {"userId": credits}}
+                        },
+                        "CitySearchRequest": {
+                            "searchRequest": {"searchContext": {"userId": credits}}
+                        },
+                        "ContentSummaryRequest": {"context": {"rawUserId": credits}},
                     }
-                }
-            }) if self.proxies else None,
+                },
+            )
+            if self.proxies
+            else None,
             transform=lambda x: x.json(),
         )  # type: ignore
 
