@@ -146,7 +146,8 @@ class Scraper:
             transform=kwargs.get("transform"),
             proxies=kwargs["proxies"] if kwargs.get("proxies") else self.proxies,
             timeout=kwargs["timeout"] if kwargs.get("timeout") else self.timeout,
-            max_retries=kwargs["max_retries"] if kwargs.get("max_retries") else self.max_retries,
+            max_retries=kwargs["max_retries"]
+            if kwargs.get("max_retries")
+            else self.max_retries,
             headers=kwargs["headers"] if kwargs.get("headers") else self.headers,
         )
-        

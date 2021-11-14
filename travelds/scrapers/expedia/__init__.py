@@ -73,7 +73,15 @@ class Expedia(Scraper):
                 "checkin": checkin,
                 "checkout": checkout,
                 "currency": self.currency,
-                "price": float(re.sub(r"[^0-9|\.]", "", listing.get("price", {}).get("lead", {}).get("formatted", None))) if listing.get("price", {}).get("lead", {}).get("formatted", None) else None,
+                "price": float(
+                    re.sub(
+                        r"[^0-9|\.]",
+                        "",
+                        listing.get("price", {}).get("lead", {}).get("formatted", None),
+                    )
+                )
+                if listing.get("price", {}).get("lead", {}).get("formatted", None)
+                else None,
                 "available": listing.get("availability", {}).get("available", None),
             }
             for listing in response["data"]["propertySearch"]["propertySearchListings"]

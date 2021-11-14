@@ -1,4 +1,6 @@
-CITY_URL = "https://www.agoda.com/api/cronos/search/GetUnifiedSuggestResult/3/1/1/0/en-us/"
+CITY_URL = (
+    "https://www.agoda.com/api/cronos/search/GetUnifiedSuggestResult/3/1/1/0/en-us/"
+)
 BASE_URL = "https://www.agoda.com/"
 SEARCH_URL = "https://www.agoda.com/graphql/search"
 

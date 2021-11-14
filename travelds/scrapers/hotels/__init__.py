@@ -10,6 +10,7 @@ import copy
 import requests
 import re
 
+
 class Hotels(Scraper):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

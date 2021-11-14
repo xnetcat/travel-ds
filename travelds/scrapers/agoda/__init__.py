@@ -2,13 +2,14 @@ from travelds.scrapers.agoda.graphql import SEARCH_QUERY
 from travelds.scrapers.agoda.constants import *
 from travelds.exceptions import *
 from travelds.scrapers.base import Scraper
-from datetime import date 
+from datetime import date
 from typing import Any, Dict, Optional
 
 import copy
 import requests
 import bs4
 import re
+
 
 class Agoda(Scraper):
     def __init__(self, *args, **kwargs):
@@ -54,9 +55,7 @@ class Agoda(Scraper):
             "currency"
         ] = self.currency
 
-        search_variables["CitySearchRequest"]["searchRequest"]["page"][
-            "pageNumber"
-        ] = 0
+        search_variables["CitySearchRequest"]["searchRequest"]["page"]["pageNumber"] = 0
 
         response: Dict = self.send_request(
             url=SEARCH_URL,
@@ -66,8 +65,8 @@ class Agoda(Scraper):
                 "variables": search_variables,
                 "query": SEARCH_QUERY,
             },
-            transform=lambda x: x.json()
-        ) # type: ignore
+            transform=lambda x: x.json(),
+        )  # type: ignore
 
         return response["data"]["citySearch"]["searchResult"]["searchInfo"][
             "totalFilteredHotels"
@@ -75,10 +74,8 @@ class Agoda(Scraper):
 
     def get_credentials(self, proxy: Optional[Dict], timeout: int) -> Dict:
         response: str = self.send_request(
-            url=BASE_URL,
-            proxies=[proxy] if proxy else None,
-            transform=lambda x: x.text
-        ) # type: ignore
+            url=BASE_URL, proxies=[proxy] if proxy else None, transform=lambda x: x.text
+        )  # type: ignore
 
         soup = bs4.BeautifulSoup(response, "html.parser")
         script_tags = soup.find_all("script")
@@ -94,12 +91,10 @@ class Agoda(Scraper):
         city_params = copy.deepcopy(CITY_PARAMS)
         city_params["searchText"] = query
         city_params["guild"] = creds["uid"]
-        
+
         response: Dict = self.send_request(
-            url=CITY_URL,
-            params=city_params,
-            transform=lambda x: x.json()
-        ) # type: ignore
+            url=CITY_URL, params=city_params, transform=lambda x: x.json()
+        )  # type: ignore
 
         view_list = response.get("ViewModelList")
         if view_list is None:
@@ -113,10 +108,7 @@ class Agoda(Scraper):
 
     def test_connection(self, proxy: Dict, timeout: int) -> bool:
         response = requests.get(
-            url=BASE_URL,
-            headers=self.headers,
-            proxies=proxy,
-            timeout=timeout
+            url=BASE_URL, headers=self.headers, proxies=proxy, timeout=timeout
         )
 
         soup = bs4.BeautifulSoup(response.text, "html.parser")
