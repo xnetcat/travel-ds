@@ -14,11 +14,12 @@ from travelds.utils import update
 
 class Booking(Scraper):
     requires_credentials = True
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.creds = self.get_credentials(None, self.timeout)
-    
+
     def get_city_data(self, query: str) -> Dict:
         params = copy.deepcopy(LOCATION_PARAMS)
         city_params = copy.deepcopy(CITY_PARAMS)
@@ -26,25 +27,26 @@ class Booking(Scraper):
         if self.creds:
             params["aid"] = self.creds["aid"]
             params["term"] = query
-            city_params["label"] = self.creds['label']
-            city_params["sid"] = self.creds['sid']
+            city_params["label"] = self.creds["label"]
+            city_params["sid"] = self.creds["sid"]
 
         response: Dict = self.send_request(
             url=LOCATION_URL,
             method="get",
-            params = params,
+            params=params,
             transform=lambda x: x.json(),
-            headers=self.creds['headers'] if self.creds else None,
+            headers=self.creds["headers"] if self.creds else None,
             cookies=self.creds["cookies"] if self.creds else None,
-            set_credentials= lambda creds, headers, _json, params, cookies: update(
-                params, {
-                    "aid": creds["aid"],
-                    "term": query
-                }
-            ) and update(headers, creds["headers"]) and update(cookies, creds["cookies"]) if self.proxies else None,
-        ) # type: ignore
+            set_credentials=lambda creds, headers, _json, params, cookies: update(
+                params, {"aid": creds["aid"], "term": query}
+            )
+            and update(headers, creds["headers"])
+            and update(cookies, creds["cookies"])
+            if self.proxies
+            else None,
+        )  # type: ignore
 
-        results = response['city']
+        results = response["city"]
         for result in results:
             if result["dest_type"] == "city":
                 city_params["ss"] = result["city_name"]
@@ -65,31 +67,34 @@ class Booking(Scraper):
             params["term"] = query
             today = datetime.today()
             tomorrow = today + timedelta(days=2)
-            country_params["checkin_year"] = today.year,
-            country_params["checkin_month"] = today.month,
-            country_params["checkin_monthday"] = today.day,
-            country_params["checkout_year"] = tomorrow.year,
-            country_params["checkout_month"] = tomorrow.month,
-            country_params["checkout_monthday"] = tomorrow.day,
-            country_params["sid"] = self.creds['sid']
-            country_params["label:"] = self.creds['label']
+            country_params["checkin_year"] = (today.year,)
+            country_params["checkin_month"] = (today.month,)
+            country_params["checkin_monthday"] = (today.day,)
+            country_params["checkout_year"] = (tomorrow.year,)
+            country_params["checkout_month"] = (tomorrow.month,)
+            country_params["checkout_monthday"] = (tomorrow.day,)
+            country_params["sid"] = self.creds["sid"]
+            country_params["label:"] = self.creds["label"]
 
         response: Dict = self.send_request(
             url=LOCATION_URL,
             method="get",
-            params = params,
+            params=params,
             transform=lambda x: x.json(),
-            headers=self.creds['headers'] if self.creds else None,
+            headers=self.creds["headers"] if self.creds else None,
             cookies=self.creds["cookies"] if self.creds else None,
-            set_credentials=(lambda creds, headers, _json, params, cookies: update(
-                params, {
-                    "aid": creds["aid"],
-                    "term": query
-                }
-            ) and update(headers, creds["headers"]) and update(cookies, creds["cookies"])) if self.proxies else None,
-        ) # type: ignore
+            set_credentials=(
+                lambda creds, headers, _json, params, cookies: update(
+                    params, {"aid": creds["aid"], "term": query}
+                )
+                and update(headers, creds["headers"])
+                and update(cookies, creds["cookies"])
+            )
+            if self.proxies
+            else None,
+        )  # type: ignore
 
-        results = response['city']
+        results = response["city"]
         for result in results:
             if result["dest_type"] == "country":
                 country_params["ss"] = result["country_name"]
@@ -101,10 +106,10 @@ class Booking(Scraper):
                 del country_params["checkout_month"]
                 del country_params["checkout_monthday"]
                 result["params"] = country_params
-                return result        
+                return result
 
         raise LocationError(f"No country found for query: {query}")
-    
+
     def get_credentials(self, proxy: Optional[Dict], timeout: int) -> Dict:
         session = requests.session()
 
@@ -147,9 +152,7 @@ class Booking(Scraper):
                 "Sec-Fetch-Dest": "empty",
                 "Accept-Language": "en-US;q=0.8,en;q=0.7",
             },
-            "cookies": {
-                "bkng": session.cookies["bkng"]
-            }
+            "cookies": {"bkng": session.cookies["bkng"]},
         }
 
         for col, attr in [
@@ -162,14 +165,18 @@ class Booking(Scraper):
                 r".*?" + col + r"\': \'([^\']*)\'.*$",
                 script_text,
                 flags=re.I | re.DOTALL,
-            ).groups()[0]  # type: ignore
+            ).groups()[
+                0
+            ]  # type: ignore
 
         data["headers"]["X-Booking-CSRF"] = data["bkng_csrf"]
         data["label"] = re.match(
             r".*?X-Booking-Label\': encodeURIComponent\(\'([^\']*)\'\).*$",
             script_text,
             flags=re.I | re.DOTALL,
-        ).groups()[0]  # type: ignore
+        ).groups()[
+            0
+        ]  # type: ignore
         for key in data.keys():
             if data[key] is None:
                 raise ScraperError("Couldn't find {}".format(key))
@@ -183,6 +190,7 @@ class Booking(Scraper):
             return False, None
         else:
             return True, creds
+
 
 if __name__ == "__main__":
     scraper = Booking("USD", 1, None, 5, 1)

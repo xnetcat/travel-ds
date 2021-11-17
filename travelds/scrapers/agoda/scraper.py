@@ -184,9 +184,13 @@ class Agoda(Scraper):
                             "context": {"clientInfo": {"userId": credits["uid"]}},
                         },
                         "CitySearchRequest": {
-                            "searchRequest": {"searchContext": {"userId": credits["uid"]}}
+                            "searchRequest": {
+                                "searchContext": {"userId": credits["uid"]}
+                            }
                         },
-                        "ContentSummaryRequest": {"context": {"rawUserId": credits["uid"]}},
+                        "ContentSummaryRequest": {
+                            "context": {"rawUserId": credits["uid"]}
+                        },
                     }
                 },
             )

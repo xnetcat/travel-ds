@@ -19,7 +19,7 @@ HEADERS = {
     "sec-fetch-mode": "cors",
     "sec-fetch-dest": "empty",
     "referer": "https://pl.trip.com/",
-    "accept-language": "en-US,en;q=0.9,pl-PL;q=0.8,pl;q=0.7"
+    "accept-language": "en-US,en;q=0.9,pl-PL;q=0.8,pl;q=0.7",
 }
 
 
@@ -90,8 +90,7 @@ P:
 
 SEARCH_JSON = {
     "seqid": None,
-    "deduplication": [
-    ],
+    "deduplication": [],
     "filterCondition": {
         "star": [],
         "rate": "",
@@ -183,6 +182,4 @@ SEARCH_JSON = {
     },
 }
 
-CITY_JSON = {
-	"searchType": "D"
-}
+CITY_JSON = {"searchType": "D"}
