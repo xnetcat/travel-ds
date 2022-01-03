@@ -165,18 +165,18 @@ class Booking(Scraper):
                 r".*?" + col + r"\': \'([^\']*)\'.*$",
                 script_text,
                 flags=re.I | re.DOTALL,
-            ).groups()[
+            ).groups()[ # type: ignore
                 0
-            ]  # type: ignore
+            ]
 
         data["headers"]["X-Booking-CSRF"] = data["bkng_csrf"]
         data["label"] = re.match(
             r".*?X-Booking-Label\': encodeURIComponent\(\'([^\']*)\'\).*$",
             script_text,
             flags=re.I | re.DOTALL,
-        ).groups()[
+        ).groups()[ # type: ignore
             0
-        ]  # type: ignore
+        ]
         for key in data.keys():
             if data[key] is None:
                 raise ScraperError("Couldn't find {}".format(key))
